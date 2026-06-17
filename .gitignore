@@ -26,6 +26,16 @@
 # 5) 그 중 quizn-board-v2 만 되살림
 !/docs/quizn-board-v2/
 
+# ── prd/ia는 '마지막 버전'만 추적 (중간 드래프트는 무시) ──
+#    (docs/quizn-board-v2 가 위에서 되살아난 뒤, 그 안의 중간본만 다시 무시)
+/docs/quizn-board-v2/prd/prd-v10.md
+/docs/quizn-board-v2/prd/prd-v11.md
+/docs/quizn-board-v2/ia/ia-v9.md
+
+# ── 와이어프레임 작업 부산물 (폰트 바이너리·stray .claude) 무시 ──
+PretendardVariable.woff2
+/docs/quizn-board-v2/ux/wireframe/.claude/
+
 # ── 비밀값(.env)은 위치 불문 항상 무시 (이미 /* 로 무시되지만 명시) ──
 .env
 .env.*

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flow — 팀의 일을 한 곳에서 (wf.css 예시)</title>
+  <link rel="stylesheet" href="../assets/wf.css" />
+  <style>
+    /* ── 레이아웃만 로컬. 색/타이포/간격/컴포넌트는 wf.css 토큰 ── */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--wf-space-24); }
+    section { padding: var(--wf-space-128) 0; }
+    .center { text-align: center; }
+    .muted { color: var(--wf-text-sub); }
+    h1, h2, h3 { color: var(--wf-text-strong); margin: 0; }
+
+    /* Header */
+    header.site {
+      position: sticky; top: 0; z-index: 30;
+      background: color-mix(in srgb, var(--wf-bg-elevated) 85%, transparent);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--wf-border-hairline);
+    }
+    .nav { display: flex; align-items: center; gap: var(--wf-space-24); height: 64px; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); font-size: var(--wf-st9-size); }
+    .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: var(--wf-primary); }
+    .nav-menu { display: flex; gap: var(--wf-space-20); margin-left: var(--wf-space-16); }
+    .nav-menu a { font-size: var(--wf-t6-size); font-weight: var(--wf-weight-semibold); color: var(--wf-text-default); }
+    .nav-menu a:hover { color: var(--wf-text-accent); }
+    .nav .spacer { flex: 1; }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; border-radius: var(--wf-radius-full); border: none; cursor: pointer; background: var(--wf-a-grey-100); color: var(--wf-text-sub); font-size: 15px; }
+    .icon-btn:hover { background: var(--wf-a-grey-200); }
+
+    /* Hero */
+    .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--wf-space-48); align-items: center; }
+    .hero h1 { font-size: 46px; line-height: 1.15; letter-spacing: -0.02em; }
+    .hero p.lead { font-size: var(--wf-st9-size); margin: var(--wf-space-20) 0 0; max-width: 30ch; }
+    /* Hero 리드 문구 — 좌우 full (max-width 제한 해제) */
+    body > section:nth-child(2) > div > div:nth-child(1) > p.lead.muted { max-width: none; width: 100%; }
+    .hero-cta { display: flex; gap: 10px; margin-top: var(--wf-space-32); flex-wrap: wrap; }
+    .hero-note { margin-top: var(--wf-space-16); font-size: var(--wf-t7-size); }
+    .hero-art { aspect-ratio: 4/3; border-radius: var(--wf-radius-card-lg); border: 1px dashed var(--wf-border-strong);
+      background: repeating-linear-gradient(45deg, var(--wf-a-grey-100), var(--wf-a-grey-100) 12px, var(--wf-a-grey-50) 12px, var(--wf-a-grey-50) 24px);
+      display: flex; align-items: center; justify-content: center; color: var(--wf-text-sub); font-size: var(--wf-t6-size); }
+
+    /* Logo strip */
+    .logos { display: flex; gap: var(--wf-space-32); align-items: center; justify-content: center; flex-wrap: wrap; opacity: .7; }
+    .logo-ph { width: 96px; height: 28px; border-radius: 6px; background: var(--wf-a-grey-200); }
+
+    /* Section heads */
+    .sec-head { max-width: 36rem; margin: 0 auto var(--wf-space-40); }
+    .sec-head h2 { font-size: var(--wf-st3-size); letter-spacing: -0.01em; }
+    .sec-head p { margin: var(--wf-space-12) 0 0; font-size: var(--wf-st10-size); }
+
+    /* Features */
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--wf-space-20); }
+    .feature .ico { width: 40px; height: 40px; border-radius: 11px; background: var(--wf-primary-weak-bg); margin-bottom: var(--wf-space-16); display: flex; align-items: center; justify-content: center; }
+    .feature .ico::after { content: ""; width: 18px; height: 18px; border-radius: 5px; background: var(--wf-text-accent); opacity: .8; }
+    .feature h3 { font-size: var(--wf-st10-size); }
+    .feature p { margin: 8px 0 0; font-size: var(--wf-t6-size); color: var(--wf-text-sub); }
+
+    /* Steps */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--wf-space-24); counter-reset: step; }
+    .step { counter-increment: step; }
+    .step .num { width: 36px; height: 36px; border-radius: var(--wf-radius-full); background: var(--wf-primary); color: var(--wf-text-on-primary); display: flex; align-items: center; justify-content: center; font-weight: var(--wf-weight-bold); margin-bottom: var(--wf-space-12); }
+    .step .num::after { content: counter(step); }
+    .step h3 { font-size: var(--wf-st10-size); }
+    .step p { margin: 6px 0 0; font-size: var(--wf-t6-size); color: var(--wf-text-sub); }
+
+    /* Pricing */
+    .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--wf-space-20); align-items: stretch; }
+    .plan { display: flex; flex-direction: column; }
+    .plan.is-featured { outline: 2px solid var(--wf-primary); outline-offset: -1px; }
+    .plan .name { font-size: var(--wf-st10-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .plan .price { font-size: var(--wf-st2-size); font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); margin: var(--wf-space-12) 0 2px; }
+    .plan .price small { font-size: var(--wf-t6-size); font-weight: var(--wf-weight-medium); color: var(--wf-text-sub); }
+    .plan ul { list-style: none; padding: 0; margin: var(--wf-space-16) 0; display: grid; gap: 10px; }
+    .plan li { font-size: var(--wf-t6-size); color: var(--wf-text-default); display: flex; gap: 8px; align-items: center; }
+    .plan li::before { content: ""; width: 16px; height: 16px; border-radius: var(--wf-radius-full); background: var(--wf-success); opacity: .85; flex: none; }
+    .plan .cta { margin-top: auto; }
+
+    /* Testimonials */
+    .quote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--wf-space-20); }
+    .quote p { font-size: var(--wf-t5-size); color: var(--wf-text-default); margin: 0 0 var(--wf-space-16); }
+    .quote .by { display: flex; align-items: center; gap: 10px; }
+    .quote .by b { color: var(--wf-text-strong); font-size: var(--wf-t6-size); }
+    .quote .by span { color: var(--wf-text-sub); font-size: var(--wf-t7-size); }
+
+    /* CTA banner */
+    .cta-banner { background: var(--wf-primary); color: var(--wf-text-on-primary); border-radius: var(--wf-radius-card-lg); padding: var(--wf-space-48); text-align: center; }
+    .cta-banner h2 { color: var(--wf-text-on-primary); font-size: var(--wf-st3-size); }
+    .cta-banner p { opacity: .85; margin: var(--wf-space-12) 0 var(--wf-space-24); }
+
+    /* Footer */
+    footer.site { border-top: 1px solid var(--wf-border-hairline); background: var(--wf-bg-elevated); padding: var(--wf-space-48) 0 var(--wf-space-32); }
+    .foot-grid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: var(--wf-space-32); }
+    .foot-col h4 { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin: 0 0 var(--wf-space-12); text-transform: uppercase; letter-spacing: .04em; }
+    .foot-col a { display: block; font-size: var(--wf-t6-size); color: var(--wf-text-default); padding: 5px 0; }
+    .foot-col a:hover { color: var(--wf-text-accent); }
+    .foot-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: var(--wf-space-32); padding-top: var(--wf-space-20); border-top: 1px solid var(--wf-border-hairline); font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+
+    @media (max-width: 860px) {
+      .hero, .feature-grid, .steps, .price-grid, .quote-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 36px; }
+      .nav-menu { display: none; }
+      .foot-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site">
+    <div class="wrap nav">
+      <div class="brand"><span class="mark"></span> Flow</div>
+      <nav class="nav-menu">
+        <a href="#features">기능</a>
+        <a href="#how">사용법</a>
+        <a href="#pricing">요금제</a>
+        <a href="#reviews">후기</a>
+      </nav>
+      <span class="spacer"></span>
+      <div class="nav-actions">
+        <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
+        <a class="wf-btn is-weak is-small" href="#">로그인</a>
+        <a class="wf-btn is-small" href="#">무료로 시작</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section>
+    <div class="wrap hero">
+      <div>
+        <span class="wf-badge c-blue">NEW · 2026 업데이트</span>
+        <h1 style="margin-top:14px">팀의 모든 일을<br />한 곳에서 흐르게.</h1>
+        <p class="lead muted">작업, 문서, 일정까지 — 흩어진 협업을 Flow 하나로 모으세요.<br />복잡한 설정 없이 5분이면 시작합니다.</p>
+        <div class="hero-cta">
+          <a class="wf-btn is-large" href="#">무료로 시작하기</a>
+          <a class="wf-btn is-weak is-large" href="#">데모 보기</a>
+        </div>
+        <p class="hero-note muted">신용카드 불필요 · 14일 무료 체험</p>
+      </div>
+      <div class="hero-art">제품 화면 미리보기</div>
+    </div>
+  </section>
+
+  <!-- Logos -->
+  <section style="padding-top:0">
+    <div class="wrap">
+      <p class="center muted" style="font-size:var(--wf-t7-size); margin:0 0 var(--wf-space-20)">이미 많은 팀이 Flow로 일하고 있어요</p>
+      <div class="logos">
+        <span class="logo-ph"></span><span class="logo-ph"></span><span class="logo-ph"></span>
+        <span class="logo-ph"></span><span class="logo-ph"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2>일하는 방식에 딱 맞게</h2>
+        <p class="muted">반복은 자동화로, 협업은 실시간으로. 필요한 기능만 깔끔하게.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="wf-card feature"><div class="ico"></div><h3>작업 보드</h3><p>드래그 한 번으로 우선순위를 정리하고 진행 상황을 한눈에 봅니다.</p></div>
+        <div class="wf-card feature"><div class="ico"></div><h3>실시간 협업</h3><p>같은 문서에서 동시에 편집하고 코멘트로 바로 소통하세요.</p></div>
+        <div class="wf-card feature"><div class="ico"></div><h3>자동화</h3><p>규칙을 만들면 반복 작업은 Flow가 알아서 처리합니다.</p></div>
+        <div class="wf-card feature"><div class="ico"></div><h3>캘린더 연동</h3><p>마감과 일정이 자동으로 동기화되어 놓치는 일이 없습니다.</p></div>
+        <div class="wf-card feature"><div class="ico"></div><h3>대시보드</h3><p>팀 성과와 병목을 지표로 확인하고 빠르게 의사결정하세요.</p></div>
+        <div class="wf-card feature"><div class="ico"></div><h3>권한 관리</h3><p>팀·프로젝트별 접근 권한을 세밀하게 제어합니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" style="background:var(--wf-bg-elevated); border-block:1px solid var(--wf-border-hairline)">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2>3단계면 충분해요</h2>
+        <p class="muted">설치도, 교육도 필요 없습니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="num"></div><h3>워크스페이스 생성</h3><p>이메일로 가입하고 팀 워크스페이스를 만듭니다.</p></div>
+        <div class="step"><div class="num"></div><h3>팀원 초대</h3><p>링크 한 줄로 팀원을 초대하고 역할을 지정하세요.</p></div>
+        <div class="step"><div class="num"></div><h3>바로 시작</h3><p>템플릿을 골라 첫 프로젝트를 즉시 시작합니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2>합리적인 요금제</h2>
+        <p class="muted">팀 규모에 맞게 시작하고 언제든 변경하세요.</p>
+      </div>
+      <div class="price-grid">
+        <div class="wf-card plan">
+          <div class="name">Starter</div>
+          <div class="price">₩0<small> / 월</small></div>
+          <p class="muted" style="font-size:var(--wf-t7-size); margin:0">최대 5명 · 개인·소규모</p>
+          <ul><li>작업 보드 3개</li><li>기본 자동화</li><li>커뮤니티 지원</li></ul>
+          <a class="wf-btn is-weak is-block cta" href="#">시작하기</a>
+        </div>
+        <div class="wf-card plan is-featured">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div class="name">Pro</div><span class="wf-badge c-blue">인기</span>
+          </div>
+          <div class="price">₩12,000<small> / 인 · 월</small></div>
+          <p class="muted" style="font-size:var(--wf-t7-size); margin:0">성장하는 팀</p>
+          <ul><li>무제한 보드</li><li>고급 자동화</li><li>대시보드 · 리포트</li><li>우선 지원</li></ul>
+          <a class="wf-btn is-block cta" href="#">Pro 시작</a>
+        </div>
+        <div class="wf-card plan">
+          <div class="name">Enterprise</div>
+          <div class="price">문의<small> </small></div>
+          <p class="muted" style="font-size:var(--wf-t7-size); margin:0">보안·규모가 중요한 조직</p>
+          <ul><li>SSO · 감사 로그</li><li>전담 매니저</li><li>SLA 보장</li></ul>
+          <a class="wf-btn is-weak is-block cta" href="#">영업팀 문의</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="reviews" style="background:var(--wf-bg-elevated); border-block:1px solid var(--wf-border-hairline)">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2>팀들이 이렇게 말해요</h2>
+      </div>
+      <div class="quote-grid">
+        <div class="wf-card quote">
+          <p>“흩어져 있던 작업이 한 곳에 모이니 회의가 절반으로 줄었어요.”</p>
+          <div class="by"><span class="wf-avatar is-sm">김</span><div><b>김서연</b><br /><span>프로덕트 매니저, 토끼컴퍼니</span></div></div>
+        </div>
+        <div class="wf-card quote">
+          <p>“자동화 규칙 몇 개로 반복 업무가 사라졌습니다. 강력 추천.”</p>
+          <div class="by"><span class="wf-avatar is-sm">이</span><div><b>이준호</b><br /><span>개발 리드, 스택랩스</span></div></div>
+        </div>
+        <div class="wf-card quote">
+          <p>“온보딩이 정말 빨라요. 팀원들이 설명 없이 바로 적응했어요.”</p>
+          <div class="by"><span class="wf-avatar is-sm">박</span><div><b>박민지</b><br /><span>대표, 무브먼트</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA banner -->
+  <section>
+    <div class="wrap">
+      <div class="cta-banner">
+        <h2>오늘 팀의 흐름을 바꿔보세요</h2>
+        <p>14일 무료 체험으로 Flow의 모든 기능을 경험할 수 있어요.</p>
+        <a class="wf-btn is-light is-large" href="#">무료로 시작하기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-col">
+          <div class="brand" style="font-size:var(--wf-st10-size)"><span class="mark"></span> Flow</div>
+          <p class="muted" style="font-size:var(--wf-t6-size); margin-top:12px; max-width:24ch">팀의 일을 한 곳에서 흐르게 하는 협업 워크스페이스.</p>
+        </div>
+        <div class="foot-col"><h4>제품</h4><a href="#">기능</a><a href="#">요금제</a><a href="#">업데이트</a><a href="#">로드맵</a></div>
+        <div class="foot-col"><h4>회사</h4><a href="#">소개</a><a href="#">블로그</a><a href="#">채용</a><a href="#">문의</a></div>
+        <div class="foot-col"><h4>지원</h4><a href="#">도움말</a><a href="#">상태</a><a href="#">개인정보</a><a href="#">약관</a></div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 Flow Inc.</span>
+        <span>Made with wf.css</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const r = document.documentElement;
+      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+  </script>
+</body>
+</html>

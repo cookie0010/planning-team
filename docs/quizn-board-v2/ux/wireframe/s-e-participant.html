@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-참여자 · 함께 만들기 (태블릿) — board-v2 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+
+    .screen { display: flex; flex-direction: column; height: 100vh; min-height: 640px; }
+
+    /* Top bar */
+    .ctop { display: flex; align-items: center; gap: var(--wf-space-12); height: 56px; padding: 0 var(--wf-space-16); background: var(--wf-bg-elevated); border-bottom: 1px solid var(--wf-border-hairline); }
+    .ctop .cname { font-size: var(--wf-st10-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .ctop .spacer { flex: 1; }
+    .timer { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--wf-radius-chip); background: var(--wf-a-grey-100); font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .presence { display: flex; align-items: center; }
+    .presence .wf-avatar { border: 2px solid var(--wf-bg-elevated); margin-left: -8px; }
+
+    /* Canvas */
+    .canvas-wrap { flex: 1; position: relative; overflow: hidden; background: var(--wf-bg-base); }
+    .canvas { position: absolute; inset: 0; background:
+      repeating-linear-gradient(0deg, transparent, transparent 31px, var(--wf-a-grey-100) 31px, var(--wf-a-grey-100) 32px),
+      repeating-linear-gradient(90deg, transparent, transparent 31px, var(--wf-a-grey-100) 31px, var(--wf-a-grey-100) 32px),
+      var(--wf-bg-elevated);
+    }
+    /* sticky notes */
+    .note { position: absolute; width: 150px; min-height: 96px; padding: 12px; border-radius: 10px; background: var(--wf-a-yellow-100); box-shadow: var(--wf-shadow-2); font-size: var(--wf-t6-size); color: var(--wf-text-strong); }
+    .note .who { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-top: 8px; }
+    .note .vote { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: var(--wf-st12-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-chip); padding: 3px 8px; }
+    .note .vote.is-voted { color: var(--wf-danger); }
+    .cursor { position: absolute; font-size: var(--wf-t7-size); color: var(--wf-text-accent); font-weight: var(--wf-weight-bold); }
+
+    /* page nav */
+    .pagenav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 12px; pointer-events: none; }
+    .pagenav button { pointer-events: auto; width: 44px; height: 44px; border-radius: var(--wf-radius-full); border: none; background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-3); color: var(--wf-text-default); font-size: 18px; cursor: pointer; }
+    .pageind { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); padding: 5px 12px; }
+
+    /* bottom toolbar */
+    .toolbar { display: flex; justify-content: center; gap: 10px; padding: 12px; background: var(--wf-bg-elevated); border-top: 1px solid var(--wf-border-hairline); }
+    .tool { width: 80px; height: 56px; border-radius: var(--wf-radius-card); border: 1px solid var(--wf-border-hairline); background: var(--wf-bg-elevated); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; color: var(--wf-text-default); font-size: var(--wf-t7-size); font-weight: var(--wf-weight-semibold); }
+    .tool .glyph { width: 22px; height: 22px; border-radius: 6px; background: var(--wf-a-grey-300); }
+    .tool.is-active { background: var(--wf-primary-weak-bg); border-color: var(--wf-primary); color: var(--wf-text-accent); }
+    .tool.is-active .glyph { background: var(--wf-text-accent); }
+
+    .frame-note { position: fixed; top: 64px; right: 12px; font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 6px 10px; max-width: 240px; }
+  </style>
+</head>
+<body>
+  <div class="screen">
+
+    <!-- Top bar -->
+    <header class="ctop">
+      <span class="cname">1모둠</span>
+      <span class="wf-badge c-green">✎ 참여자</span>
+      <span class="spacer"></span>
+      <span class="timer">⏱ 12:30</span>
+      <span class="presence">
+        <span class="wf-avatar is-sm">나</span>
+        <span class="wf-avatar is-sm">민</span>
+        <span class="wf-avatar is-sm">지</span>
+        <span class="wf-avatar is-sm">+8</span>
+      </span>
+    </header>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <div class="pageind">2 / 5 페이지</div>
+
+        <div class="note" style="left:80px; top:70px;">분리수거함을<br />색깔로 구분<div class="who">— 환경지킴이</div><span class="vote is-voted">♥ 3</span></div>
+        <div class="note" style="left:280px; top:130px; background:var(--wf-a-teal-100);">교문 앞 쓰레기<br />줄이기<div class="who">— 익명</div><span class="vote">♡ 1</span></div>
+        <div class="note" style="left:520px; top:90px; background:var(--wf-a-purple-100);">급식 잔반<br />캠페인<div class="who">— 모둠장</div><span class="vote">♡ 0</span></div>
+        <div class="note" style="left:360px; top:280px;">텀블러 쓰기<div class="who">— 나무</div><span class="vote">♡ 2</span></div>
+
+        <div class="cursor" style="left:470px; top:250px;">▷ 하늘</div>
+      </div>
+
+      <div class="pagenav">
+        <button title="이전 페이지">‹</button>
+        <button title="다음 페이지">›</button>
+      </div>
+    </div>
+
+    <!-- Bottom toolbar (4 tools) -->
+    <nav class="toolbar">
+      <button class="tool is-active"><span class="glyph"></span>포스트잇</button>
+      <button class="tool"><span class="glyph"></span>텍스트</button>
+      <button class="tool"><span class="glyph"></span>펜</button>
+      <button class="tool"><span class="glyph"></span>도형</button>
+    </nav>
+  </div>
+
+  <div class="frame-note">박스 레벨 · IA <b>E-참여자</b> · PRD F4·F10 · 태블릿 1024 · 하단 도구바 4종 · ♥=공감투표</div>
+</body>
+</html>

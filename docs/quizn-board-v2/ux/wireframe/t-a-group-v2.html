@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A · 그룹 내부 v2 — board-v2 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <link rel="stylesheet" href="wf-screen.css?v=2" />
+  <style>
+    /* ── 이 화면 고유 레이아웃만. 공용 컴포넌트는 wf-screen.css ── */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+
+    /* breadcrumb back row (그룹 내부 전용) */
+    .backrow { display: flex; align-items: center; gap: 8px; margin-bottom: var(--wf-space-16); }
+    .backrow a { font-size: var(--wf-t6-size); color: var(--wf-text-sub); display: inline-flex; align-items: center; gap: 6px; }
+    .backrow a:hover { color: var(--wf-text-accent); }
+
+    /* page-head h1에 폴더 아이콘 (그룹 내부 전용) */
+    .page-head h1 { display: flex; align-items: center; gap: 10px; }
+    .ficon { width: 22px; height: 17px; border-radius: 3px 3px 5px 5px; background: var(--wf-a-grey-400); position: relative; flex: none; }
+    .ficon::before { content: ""; position: absolute; top: -5px; left: 0; width: 11px; height: 6px; border-radius: 3px 3px 0 0; background: var(--wf-a-grey-400); }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span> canvas</div>
+    <span class="spacer"></span>
+    <input class="wf-field search" placeholder="캔버스 검색" />
+    <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
+    <span class="wf-avatar is-sm">교사</span>
+  </header>
+
+  <main class="main">
+    <div class="backrow">
+      <a href="t-a-list-v2.html">← 캔버스</a>
+      <span class="wf-text-sub">/</span>
+      <span class="wf-t6 wf-text-default">1차시 — 우리 동네 환경 문제</span>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="wf-t2 wf-bold"><span class="ficon"></span> 1차시 — 우리 동네 환경 문제</h1>
+      </div>
+      <div class="head-actions">
+        <a class="wf-btn" data-new-canvas>+ 캔버스 생성</a>
+      </div>
+    </div>
+
+    <!-- 목록 화면과 동일한 컴포넌트: 생성 타일(맨 앞) + 캔버스 카드(⋮ 메뉴 포함) -->
+    <div class="grid">
+
+      <!-- 새 캔버스 만들기 (맨 앞) -->
+      <a class="wf-card new-group" data-new-canvas>
+        <span class="plus">+</span>
+        <span class="ng-title">새 캔버스 만들기</span>
+        <span class="wf-st13 wf-text-sub">새로운 캔버스를 만들어보세요</span>
+      </a>
+
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html">
+        <div class="thumb">
+          <span class="wf-badge c-green status-badge">진행 중</span>
+          <span class="presence"><span class="wf-avatar is-sm">A</span><span class="wf-avatar is-sm">B</span><span class="wf-avatar is-sm">+9</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>1모둠</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">보관</button>
+                <button class="menu-item is-danger">삭제</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 11/20</div>
+        </div>
+      </div>
+
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html">
+        <div class="thumb">
+          <span class="wf-badge c-green status-badge">진행 중</span>
+          <span class="presence"><span class="wf-avatar is-sm">C</span><span class="wf-avatar is-sm">+6</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>2모둠</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">보관</button>
+                <button class="menu-item is-danger">삭제</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 7/20</div>
+        </div>
+      </div>
+
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html">
+        <div class="thumb">
+          <span class="wf-badge c-yellow status-badge">정원 임박</span>
+          <span class="presence"><span class="wf-avatar is-sm">D</span><span class="wf-avatar is-sm">+17</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>3모둠</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">보관</button>
+                <button class="menu-item is-danger">삭제</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 19/20</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="frame-note">
+    <div class="tag">박스 레벨 · IA <b>A</b> (그룹 내부) v2 · 폴더 클릭 → 진입 · 브레드크럼 복귀 · 목록 화면과 동일 컴포넌트</div>
+  </div>
+
+  <script src="wf-screen.js?v=2"></script>
+</body>
+</html>

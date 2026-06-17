@@ -1,0 +1,32 @@
+# 이 저장소는 docs/quizn-board-v2 산출물만 공개한다.
+# 전략: 전부 무시한 뒤, docs/quizn-board-v2 만 되살린다.
+# (gitignore의 re-include는 부모 디렉토리가 무시되면 동작하지 않으므로,
+#  경로를 한 단계씩 되살린 뒤 그 안을 다시 무시하는 순서로 작성한다.)
+
+# 1) 루트의 모든 것을 무시
+/*
+
+# 2) .gitignore 자체는 추적 (저장소가 자기 규칙을 갖도록)
+!/.gitignore
+
+# 2-a) .claude (에이전트·스킬·공유 설정) 추적
+!/.claude/
+#      단, 로컬 개인 설정(권한 허용목록 등 기기별)은 제외
+/.claude/settings.local.json
+
+# 3) git이 docs 안으로 내려갈 수 있게 docs 디렉토리만 되살림
+!/docs/
+
+# 4) docs 안의 모든 것을 무시
+/docs/*
+
+# 5) 그 중 quizn-board-v2 만 되살림
+!/docs/quizn-board-v2/
+
+# ── 비밀값(.env)은 위치 불문 항상 무시 (이미 /* 로 무시되지만 명시) ──
+.env
+.env.*
+
+# ── OS·도구 부산물은 위치 불문 항상 무시 ──
+.DS_Store
+Thumbs.db

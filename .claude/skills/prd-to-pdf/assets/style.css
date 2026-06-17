@@ -1,0 +1,177 @@
+/* prd-to-pdf 기본 스타일. 한국어 기획 문서(A4) 기준.
+   색·폰트·여백을 바꾸면 모든 변환에 일괄 적용된다. */
+
+:root {
+  --ink: #1a1d21;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --line: #d9dde3;
+  --bg-soft: #f4f6f9;
+}
+
+@page {
+  size: A4;
+  margin: 22mm 18mm 20mm 18mm;
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-size: 8.5pt;
+    color: #9aa1a9;
+  }
+}
+
+/* 표지에는 머리글·쪽번호 생략 */
+@page :first {
+  @bottom-center { content: none; }
+  @top-right { content: none; }
+}
+
+@page content {
+  @top-right {
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-size: 8.5pt;
+    color: #9aa1a9;
+  }
+}
+
+body {
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif;
+  font-size: 10pt;
+  line-height: 1.65;
+  color: var(--ink);
+  word-break: keep-all;
+}
+
+/* ── 표지 ───────────────────────────── */
+.cover {
+  page-break-after: always;
+  height: 240mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.cover-brand {
+  font-size: 10pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.cover-kicker {
+  font-size: 10.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6mm;
+}
+.cover-title {
+  font-size: 27pt;
+  font-weight: 800;
+  line-height: 1.3;
+  margin: 0 0 10mm 0;
+}
+.cover-rule {
+  width: 28mm;
+  height: 1.6mm;
+  background: var(--accent);
+  margin-bottom: 12mm;
+}
+.cover-meta {
+  border-collapse: collapse;
+  font-size: 10.5pt;
+}
+.cover-meta td {
+  padding: 1.6mm 0;
+  border: none;
+}
+.cover-meta td:first-child {
+  color: var(--muted);
+  width: 30mm;
+  letter-spacing: 0.04em;
+}
+.cover-meta td:last-child { font-weight: 600; }
+.cover-footer {
+  font-size: 8.5pt;
+  color: #9aa1a9;
+}
+
+/* ── 본문 ───────────────────────────── */
+.content { page: content; }
+
+.content h1 {
+  font-size: 17pt;
+  font-weight: 800;
+  margin: 0 0 6mm 0;
+}
+.content h2 {
+  font-size: 13.5pt;
+  font-weight: 800;
+  margin: 9mm 0 3.5mm 0;
+  padding-bottom: 1.6mm;
+  border-bottom: 1.5pt solid var(--ink);
+  page-break-after: avoid;
+}
+.content h3 {
+  font-size: 11pt;
+  font-weight: 700;
+  margin: 6mm 0 2.5mm 0;
+  page-break-after: avoid;
+}
+
+.content p { margin: 0 0 2.8mm 0; }
+
+.content ul, .content ol { margin: 0 0 3mm 0; padding-left: 5.5mm; }
+.content li { margin-bottom: 1.2mm; }
+
+.content blockquote {
+  margin: 3mm 0;
+  padding: 2.5mm 4mm;
+  border-left: 1.2mm solid var(--accent);
+  background: var(--bg-soft);
+  color: #3f4750;
+}
+.content blockquote p { margin: 0 0 1mm 0; }
+
+.content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 3mm 0 4.5mm 0;
+  font-size: 9pt;
+}
+.content th {
+  background: var(--bg-soft);
+  font-weight: 700;
+  text-align: left;
+}
+.content th, .content td {
+  border: 0.5pt solid var(--line);
+  padding: 2mm 2.5mm;
+  vertical-align: top;
+}
+.content tr { page-break-inside: avoid; }
+.content thead { display: table-header-group; }
+
+.content hr {
+  border: none;
+  border-top: 0.5pt solid var(--line);
+  margin: 7mm 0;
+}
+
+.content code {
+  font-family: "SF Mono", "D2Coding", Menlo, monospace;
+  font-size: 8.5pt;
+  background: var(--bg-soft);
+  padding: 0.4mm 1.2mm;
+  border-radius: 1mm;
+}
+.content pre {
+  background: var(--bg-soft);
+  border: 0.5pt solid var(--line);
+  border-radius: 1.5mm;
+  padding: 3mm;
+  margin: 3mm 0;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+}
+.content pre code { background: none; padding: 0; }
+
+.content strong { font-weight: 700; }

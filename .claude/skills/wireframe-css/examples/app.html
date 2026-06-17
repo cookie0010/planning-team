@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flow — 워크스페이스 (wf.css 예시)</title>
+  <link rel="stylesheet" href="../assets/wf.css" />
+  <style>
+    /* ── 레이아웃만 로컬 CSS. 색/타이포/컴포넌트는 모두 wf.css 토큰 사용 ── */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--wf-font-family);
+      background: var(--wf-bg-base);
+      color: var(--wf-text-default);
+      -webkit-font-smoothing: antialiased;
+    }
+    .app { display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 60px 1fr; height: 100vh; }
+
+    /* Topbar */
+    .topbar {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: var(--wf-space-16);
+      padding: 0 var(--wf-space-20);
+      background: var(--wf-bg-elevated);
+      border-bottom: 1px solid var(--wf-border-hairline);
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); font-size: var(--wf-st9-size); }
+    .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: var(--wf-primary); }
+    .topbar .spacer { flex: 1; }
+    .topbar .search { width: min(360px, 36vw); height: 38px; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: var(--wf-radius-full);
+      border: none; cursor: pointer; background: var(--wf-a-grey-100); color: var(--wf-text-sub);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .icon-btn:hover { background: var(--wf-a-grey-200); }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--wf-bg-elevated);
+      border-right: 1px solid var(--wf-border-hairline);
+      padding: var(--wf-space-16); display: flex; flex-direction: column; gap: 4px;
+      overflow-y: auto;
+    }
+    .nav-label { font-size: var(--wf-st13-size); color: var(--wf-text-sub); font-weight: var(--wf-weight-bold); margin: var(--wf-space-16) 0 4px; padding: 0 10px; letter-spacing: .02em; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 10px; cursor: pointer;
+      color: var(--wf-text-default); font-size: var(--wf-t6-size); font-weight: var(--wf-weight-semibold);
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: var(--wf-a-grey-100); }
+    .nav-item.is-active { background: var(--wf-primary-weak-bg); color: var(--wf-text-accent); }
+    .nav-item .ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: .5; flex: none; }
+    .nav-bottom { margin-top: auto; }
+
+    /* Main */
+    .main { overflow-y: auto; padding: var(--wf-space-32) var(--wf-space-64); }
+    .content { max-width: 1280px; margin: 0 auto; display: grid; gap: var(--wf-space-24); }
+    .crumb { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--wf-space-16); flex-wrap: wrap; }
+    .page-head h1 { margin: 4px 0 0; color: var(--wf-text-strong); }
+    .head-actions { display: flex; gap: 8px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--wf-space-16); }
+    .stat .label { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .stat .value { font-size: var(--wf-st4-size); font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); margin-top: 6px; }
+    .stat .delta { font-size: var(--wf-t7-size); margin-top: 6px; }
+
+    .tabs { display: flex; gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--wf-space-24); align-items: start; }
+    .block-title { font-size: var(--wf-st10-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); margin: 0 0 var(--wf-space-12); }
+    .field-group { display: grid; gap: 10px; }
+    .field-group label { font-size: var(--wf-t7-size); color: var(--wf-text-sub); font-weight: var(--wf-weight-semibold); }
+    .row-end { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+    .placeholder { background: repeating-linear-gradient(45deg, var(--wf-a-grey-100), var(--wf-a-grey-100) 10px, var(--wf-a-grey-50) 10px, var(--wf-a-grey-50) 20px); border: 1px dashed var(--wf-border-strong); border-radius: var(--wf-radius-card); height: 160px; display: flex; align-items: center; justify-content: center; color: var(--wf-text-sub); font-size: var(--wf-t6-size); }
+
+    .toast-wrap { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 20; }
+    @media (max-width: 1100px) { .main { padding: var(--wf-space-32) var(--wf-space-40); } }
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 60px 1fr; }
+      .sidebar { display: none; }
+      .main { padding: var(--wf-space-20) var(--wf-space-16); }
+      .stats, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="brand"><span class="mark"></span> Flow</div>
+      <input class="wf-field search" placeholder="프로젝트·문서 검색" />
+      <span class="spacer"></span>
+      <button class="wf-btn is-small">+ 새 작업</button>
+      <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
+      <span class="wf-avatar is-sm">SL</span>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <button class="nav-item is-active"><span class="ico"></span> 대시보드</button>
+      <button class="nav-item"><span class="ico"></span> 내 작업</button>
+      <button class="nav-item"><span class="ico"></span> 캘린더</button>
+      <div class="nav-label">프로젝트</div>
+      <button class="nav-item"><span class="ico"></span> 디자인 시스템</button>
+      <button class="nav-item"><span class="ico"></span> 웹사이트 리뉴얼</button>
+      <button class="nav-item"><span class="ico"></span> 모바일 앱</button>
+      <div class="nav-bottom">
+        <div class="wf-divider" style="margin:12px 0"></div>
+        <button class="nav-item"><span class="ico"></span> 설정</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="content">
+
+        <div>
+          <div class="crumb">워크스페이스 / 디자인 시스템</div>
+          <div class="page-head">
+            <div>
+              <h1 class="wf-t2 wf-bold">디자인 시스템</h1>
+              <p class="wf-t6 wf-text-sub" style="margin:6px 0 0">와이어프레임 단계의 컴포넌트 정리 보드입니다.</p>
+            </div>
+            <div class="head-actions">
+              <button class="wf-btn is-weak is-small">공유</button>
+              <button class="wf-btn is-small">검토 요청</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <section class="stats">
+          <div class="wf-card stat">
+            <div class="label">진행 중 작업</div>
+            <div class="value">24</div>
+            <div class="delta"><span class="wf-badge c-blue">이번 주 +6</span></div>
+          </div>
+          <div class="wf-card stat">
+            <div class="label">완료율</div>
+            <div class="value">72%</div>
+            <div class="delta"><span class="wf-badge c-green">+8% ▲</span></div>
+          </div>
+          <div class="wf-card stat">
+            <div class="label">지연</div>
+            <div class="value">3</div>
+            <div class="delta"><span class="wf-badge c-red">주의 필요</span></div>
+          </div>
+        </section>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="wf-chip is-selected">전체</button>
+          <button class="wf-chip">진행 중</button>
+          <button class="wf-chip">검토</button>
+          <button class="wf-chip">완료</button>
+        </div>
+
+        <div class="grid-2">
+          <!-- Task list -->
+          <section>
+            <h2 class="block-title">최근 작업</h2>
+            <div class="wf-list">
+              <div class="wf-list-row is-clickable">
+                <span class="wf-avatar is-sm">JD</span>
+                <div class="wf-list-row__body">
+                  <div class="wf-list-row__title">버튼 컴포넌트 토큰 정리</div>
+                  <div class="wf-list-row__desc">2시간 전 · 김지demo</div>
+                </div>
+                <span class="wf-badge c-green">완료</span>
+              </div>
+              <div class="wf-list-row is-clickable">
+                <span class="wf-avatar is-sm">MK</span>
+                <div class="wf-list-row__body">
+                  <div class="wf-list-row__title">다크 모드 대비 검수</div>
+                  <div class="wf-list-row__desc">어제 · 박무진</div>
+                </div>
+                <span class="wf-badge c-yellow">검토</span>
+              </div>
+              <div class="wf-list-row is-clickable">
+                <span class="wf-avatar is-sm">SL</span>
+                <div class="wf-list-row__body">
+                  <div class="wf-list-row__title">와이어프레임 팔레트 적용</div>
+                  <div class="wf-list-row__desc">진행 중 · 이성근</div>
+                </div>
+                <span class="wf-badge c-blue">진행</span>
+              </div>
+              <div class="wf-list-row is-disabled">
+                <span class="wf-avatar is-sm">—</span>
+                <div class="wf-list-row__body">
+                  <div class="wf-list-row__title">아카이브된 작업</div>
+                  <div class="wf-list-row__desc">보관됨</div>
+                </div>
+                <span class="wf-badge c-elephant">보관</span>
+              </div>
+            </div>
+
+            <h2 class="block-title" style="margin-top:24px">미리보기</h2>
+            <div class="placeholder">이미지 / 차트 자리 (와이어프레임)</div>
+          </section>
+
+          <!-- Form card -->
+          <section>
+            <h2 class="block-title">새 작업 만들기</h2>
+            <div class="wf-card">
+              <div class="field-group">
+                <div>
+                  <label>제목</label>
+                  <input class="wf-field" placeholder="예: 리스트 행 상태 정의" style="margin-top:6px" />
+                </div>
+                <div>
+                  <label>담당자</label>
+                  <input class="wf-field" placeholder="이름 검색" style="margin-top:6px" />
+                </div>
+                <div>
+                  <label>우선순위</label>
+                  <div class="tabs" style="margin-top:8px">
+                    <button class="wf-chip is-selected">보통</button>
+                    <button class="wf-chip">높음</button>
+                    <button class="wf-chip">긴급</button>
+                  </div>
+                </div>
+                <div class="wf-divider" style="margin:6px 0"></div>
+                <div class="row-end">
+                  <button class="wf-btn is-weak is-small">취소</button>
+                  <button class="wf-btn is-small" id="saveBtn">저장</button>
+                </div>
+              </div>
+            </div>
+
+            <h2 class="block-title" style="margin-top:24px">버튼</h2>
+            <div class="wf-card" style="display:flex; flex-wrap:wrap; gap:8px">
+              <button class="wf-btn is-small">Primary</button>
+              <button class="wf-btn is-weak is-small">Weak</button>
+              <button class="wf-btn is-dark is-small">Dark</button>
+              <button class="wf-btn is-light is-small">Light</button>
+              <button class="wf-btn is-danger is-small">Danger</button>
+              <button class="wf-btn is-small" disabled>Disabled</button>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast (저장 시 노출) -->
+  <div class="toast-wrap" id="toastWrap" style="display:none">
+    <div class="wf-toast">작업이 저장되었습니다 ✓</div>
+  </div>
+
+  <script>
+    // 테마 토글
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const r = document.documentElement;
+      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+    // 토스트 데모
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const t = document.getElementById('toastWrap');
+      t.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => (t.style.display = 'none'), 2200);
+    });
+  </script>
+</body>
+</html>

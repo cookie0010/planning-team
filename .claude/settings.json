@@ -1,0 +1,16 @@
+{
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true,
+    "product-management@knowledge-work-plugins": true,
+    "context7@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "firecrawl@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "design@knowledge-work-plugins": true,
+    "figma@claude-plugins-official": true,
+    "telegram@claude-plugins-official": true
+  }
+}

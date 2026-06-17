@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A · 캔버스 목록 (지휘석) — board-v2 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    /* ── 레이아웃만 로컬. 색/타이포/컴포넌트는 wf.css 토큰 ── */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: var(--wf-font-family);
+      background: var(--wf-bg-base);
+      color: var(--wf-text-default);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Topbar */
+    .topbar {
+      display: flex; align-items: center; gap: var(--wf-space-16);
+      height: 60px; padding: 0 var(--wf-space-24);
+      background: var(--wf-bg-elevated);
+      border-bottom: 1px solid var(--wf-border-hairline);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); font-size: var(--wf-st9-size); }
+    .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: var(--wf-primary); }
+    .crumb { font-size: var(--wf-t6-size); color: var(--wf-text-sub); }
+    .crumb b { color: var(--wf-text-default); font-weight: var(--wf-weight-semibold); }
+    .topbar .spacer { flex: 1; }
+    .topbar .search { width: min(280px, 24vw); height: 40px; }
+    .icon-btn { width: 40px; height: 40px; border-radius: var(--wf-radius-full); border: none; cursor: pointer; background: var(--wf-a-grey-100); color: var(--wf-text-sub); display: inline-flex; align-items: center; justify-content: center; font-size: 16px; }
+    .icon-btn:hover { background: var(--wf-a-grey-200); }
+
+    /* Main */
+    .main { padding: var(--wf-space-32) var(--wf-space-40) var(--wf-space-64); max-width: 1320px; margin: 0 auto; }
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--wf-space-16); flex-wrap: wrap; margin-bottom: var(--wf-space-24); }
+    .page-head h1 { margin: 4px 0 0; color: var(--wf-text-strong); }
+    .head-meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--wf-danger); display: inline-block; }
+    .head-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* Toolbar */
+    .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: var(--wf-space-24); flex-wrap: wrap; }
+    .toolbar .spacer { flex: 1; }
+    .refresh-note { font-size: var(--wf-t7-size); color: var(--wf-text-sub); display: flex; align-items: center; gap: 6px; }
+
+    /* Group */
+    .group { margin-bottom: var(--wf-space-32); }
+    .group-head { display: flex; align-items: center; gap: 10px; margin-bottom: var(--wf-space-16); }
+    .group-head h2 { font-size: var(--wf-st9-size); color: var(--wf-text-strong); margin: 0; }
+    .group-head .count { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .group-body { background: var(--wf-a-grey-50); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-card-lg); padding: var(--wf-space-20); }
+    .group.ungrouped .group-body { background: transparent; border: 1px dashed var(--wf-border-strong); }
+
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--wf-space-20); }
+
+    /* Canvas card */
+    .ccard { padding: 0; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+    .thumb {
+      aspect-ratio: 16/10; border-bottom: 1px solid var(--wf-border-hairline);
+      background: repeating-linear-gradient(45deg, var(--wf-a-grey-100), var(--wf-a-grey-100) 11px, var(--wf-a-grey-50) 11px, var(--wf-a-grey-50) 22px);
+      display: flex; align-items: center; justify-content: center; color: var(--wf-text-sub); font-size: var(--wf-t7-size);
+      position: relative;
+    }
+    .thumb .status-badge { position: absolute; top: 10px; left: 10px; }
+    .thumb .presence { position: absolute; top: 10px; right: 10px; display: flex; }
+    .thumb .presence .wf-avatar { border: 2px solid var(--wf-bg-elevated); margin-left: -8px; }
+    .ccard .body { padding: var(--wf-space-16); display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .ccard .title { font-size: var(--wf-st10-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .ccard .meta { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .ccard .actions { display: flex; gap: 6px; margin-top: 8px; }
+    .ccard.is-locked .thumb { background: repeating-linear-gradient(45deg, var(--wf-a-grey-200), var(--wf-a-grey-200) 11px, var(--wf-a-grey-100) 11px, var(--wf-a-grey-100) 22px); }
+
+    .frame-note { max-width: 1320px; margin: 0 auto; padding: 0 var(--wf-space-40) var(--wf-space-40); }
+    .frame-note .tag { font-size: var(--wf-st13-size); color: var(--wf-text-sub); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 10px 14px; }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span> board-v2</div>
+    <span class="crumb">프로젝트 / <b>2026 1학기 환경수업</b></span>
+    <span class="spacer"></span>
+    <input class="wf-field search" placeholder="캔버스 검색" />
+    <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
+    <span class="wf-avatar is-sm">교사</span>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <span class="wf-badge c-blue">지휘석</span>
+        <h1 class="wf-t2 wf-bold">캔버스 목록</h1>
+        <div class="head-meta">
+          <span class="live-dot"></span>
+          <span class="wf-t7 wf-text-sub">수업 중 — 썸네일이 2초마다 갱신돼요</span>
+        </div>
+      </div>
+      <div class="head-actions">
+        <button class="wf-btn is-weak">그룹 만들기</button>
+        <button class="wf-btn">+ 캔버스 생성</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="wf-chip is-selected">전체</button>
+      <button class="wf-chip">진행 중</button>
+      <button class="wf-chip">잠금</button>
+      <button class="wf-chip">보관</button>
+      <span class="spacer"></span>
+      <span class="refresh-note"><span class="live-dot"></span> 라이브</span>
+    </div>
+
+    <!-- Group 1 -->
+    <section class="group">
+      <div class="group-head">
+        <h2>1차시 — 우리 동네 환경 문제</h2>
+        <span class="count">캔버스 3 · 드릴다운 단위</span>
+      </div>
+      <div class="group-body">
+        <div class="cards">
+          <!-- card -->
+          <div class="wf-card ccard is-interactive">
+            <div class="thumb">
+              <span class="wf-badge c-green status-badge">진행 중</span>
+              <span class="presence"><span class="wf-avatar is-sm">A</span><span class="wf-avatar is-sm">B</span><span class="wf-avatar is-sm">+9</span></span>
+              라이브 미리보기
+            </div>
+            <div class="body">
+              <div class="title">1모둠</div>
+              <div class="meta">참여 11/20 · 객체 34 · 2/5페이지</div>
+              <div class="actions">
+                <button class="wf-btn is-light is-small">열기</button>
+                <button class="wf-btn is-weak is-small">크게 보기</button>
+              </div>
+            </div>
+          </div>
+          <div class="wf-card ccard is-interactive">
+            <div class="thumb">
+              <span class="wf-badge c-green status-badge">진행 중</span>
+              <span class="presence"><span class="wf-avatar is-sm">C</span><span class="wf-avatar is-sm">+6</span></span>
+              라이브 미리보기
+            </div>
+            <div class="body">
+              <div class="title">2모둠</div>
+              <div class="meta">참여 7/20 · 객체 18 · 1/5페이지</div>
+              <div class="actions">
+                <button class="wf-btn is-light is-small">열기</button>
+                <button class="wf-btn is-weak is-small">크게 보기</button>
+              </div>
+            </div>
+          </div>
+          <div class="wf-card ccard is-interactive">
+            <div class="thumb">
+              <span class="wf-badge c-yellow status-badge">정원 임박</span>
+              <span class="presence"><span class="wf-avatar is-sm">D</span><span class="wf-avatar is-sm">+17</span></span>
+              라이브 미리보기
+            </div>
+            <div class="body">
+              <div class="title">3모둠</div>
+              <div class="meta">참여 19/20 · 객체 52 · 3/5페이지</div>
+              <div class="actions">
+                <button class="wf-btn is-light is-small">열기</button>
+                <button class="wf-btn is-weak is-small">크게 보기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ungrouped -->
+    <section class="group ungrouped">
+      <div class="group-head">
+        <h2 class="wf-text-sub">그룹 없음</h2>
+        <span class="count">캔버스 2</span>
+      </div>
+      <div class="group-body">
+        <div class="cards">
+          <div class="wf-card ccard is-interactive">
+            <div class="thumb">
+              <span class="wf-badge c-green status-badge">진행 중</span>
+              미리보기
+            </div>
+            <div class="body">
+              <div class="title">자유 발표 보드</div>
+              <div class="meta">참여 4/20 · 객체 9 · 1/2페이지</div>
+              <div class="actions">
+                <button class="wf-btn is-light is-small">열기</button>
+                <button class="wf-btn is-weak is-small">설정</button>
+              </div>
+            </div>
+          </div>
+          <div class="wf-card ccard is-interactive is-locked">
+            <div class="thumb">
+              <span class="wf-badge c-elephant status-badge">🔒 잠금</span>
+              미리보기 (잠김)
+            </div>
+            <div class="body">
+              <div class="title">지난 활동 — 분리수거</div>
+              <div class="meta">참여 0/20 · 객체 41 · 시간 종료됨</div>
+              <div class="actions">
+                <button class="wf-btn is-light is-small">열기</button>
+                <button class="wf-btn is-weak is-small">복제</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="frame-note">
+    <div class="tag">박스 레벨 와이어프레임 · IA 코드 <b>A</b> (지휘석) · PRD F1·F2·F7·F11 · 데스크톱 1440 기준</div>
+  </div>
+
+  <script>
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const r = document.documentElement;
+      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+  </script>
+</body>
+</html>

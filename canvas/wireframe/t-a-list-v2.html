@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A · 캔버스 목록 (지휘석) v2 — canvas 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <link rel="stylesheet" href="wf-screen.css?v=5" />
+  <style>
+    /* ── 이 화면 고유 레이아웃만. 공용 컴포넌트는 wf-screen.css ── */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: var(--wf-space-24); flex-wrap: wrap; }
+    .toolbar .wf-chip { font-size: var(--wf-t6-size); }
+    /* 잠긴 카드: 🔒 잠금 배지 우측에 '작업이 불가능해요' 안내 */
+    .thumb .status-wrap { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 6px; }
+    .thumb .status-wrap .status-badge { position: static; }
+    .thumb .lock-note { font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); padding: 3px 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span> canvas</div>
+    <span class="spacer"></span>
+    <input class="wf-field search" placeholder="캔버스 검색" />
+    <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
+    <span class="wf-avatar is-sm">교사</span>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1 class="wf-t2 wf-bold">기분좋은 하루, canvas와 함께해요</h1>
+      </div>
+      <div class="head-actions">
+        <button class="wf-btn is-weak">그룹 만들기</button>
+        <a class="wf-btn" data-new-canvas>+ 캔버스 생성</a>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="wf-chip is-selected" data-filter="all">전체</button>
+      <button class="wf-chip" data-filter="active">진행 중</button>
+      <button class="wf-chip" data-filter="shared">공유된 캔버스</button>
+    </div>
+
+    <!-- 단독 캔버스 + 그룹 폴더가 한 그리드에. 캔버스가 주연, 폴더는 묶음 -->
+    <!-- 탭 필터: 전체=모두 / 진행 중=active / 보관함=archived / 공유된 캔버스=내가 편집자(shared) -->
+    <div class="grid">
+
+      <!-- 새 캔버스 만들기 (맨 앞) -->
+      <a class="wf-card new-group" data-new-canvas data-kind="new">
+        <span class="plus">+</span>
+        <span class="ng-title">새 캔버스 만들기</span>
+        <span class="wf-st13 wf-text-sub">새로운 캔버스를 만들어보세요</span>
+      </a>
+
+      <!-- 단독 캔버스 (주연) -->
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="false">
+        <div class="thumb">
+          <span class="wf-badge c-green status-badge">진행 중</span>
+          <span class="presence"><span class="wf-avatar is-sm">A</span><span class="wf-avatar is-sm">B</span><span class="wf-avatar is-sm">+9</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>오늘의 워밍업</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">잠금</button>
+                <button class="menu-item is-danger">삭제</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 11/20</div>
+        </div>
+      </div>
+
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="false">
+        <div class="thumb">
+          <span class="wf-badge c-green status-badge">진행 중</span>
+          <span class="presence"><span class="wf-avatar is-sm">C</span><span class="wf-avatar is-sm">+3</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>자유 발표 보드</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">잠금</button>
+                <button class="menu-item is-danger">삭제</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 4/20</div>
+        </div>
+      </div>
+
+      <!-- 그룹 폴더 (묶음 — 클릭하면 안으로). 폴더는 '전체'에서만 -->
+      <div class="wf-card folder is-interactive" title="그룹 안으로 들어가기" onclick="location.href='t-a-group-v2.html'" data-kind="folder">
+        <div class="fthumb">
+          <div class="tiles">
+            <div class="tile"></div><div class="tile"></div>
+            <div class="tile"></div><div class="tile empty"></div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="fname"><span class="ficon"></span> 1차시 — 우리 동네 환경 문제</div>
+          <div class="fcount">캔버스 3개</div>
+        </div>
+      </div>
+
+      <!-- 단독 캔버스 (3) — 잠금(작업 동결, 입장은 허용). 상태는 active 그룹으로 묶지 않고 카드 배지로만 표시 -->
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="false">
+        <div class="thumb">
+          <span class="status-wrap"><span class="wf-badge c-elephant status-badge">🔒 잠금</span><span class="lock-note">작업이 불가능해요</span></span>
+          <span class="presence"><span class="wf-avatar is-sm">E</span><span class="wf-avatar is-sm">+5</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>분리수거 캠페인</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">잠금 해제</button>
+                <button class="menu-item is-danger">삭제</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 6/20</div>
+        </div>
+      </div>
+
+      <!-- 공유된 캔버스 — 내가 '편집자'로 들어가 있는(소유자 아님) 캔버스 -->
+      <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="true">
+        <div class="thumb">
+          <span class="wf-badge c-teal status-badge">🤝 공유</span>
+          <span class="presence"><span class="wf-avatar is-sm">옆</span><span class="wf-avatar is-sm">+7</span></span>
+          라이브 미리보기
+        </div>
+        <div class="body">
+          <div class="title">
+            <span>옆 반 합동 캔버스</span>
+            <span class="kebab-wrap">
+              <button class="kebab" aria-label="더보기">⋮</button>
+              <div class="card-menu">
+                <button class="menu-item">복사하기</button>
+                <button class="menu-item">캔버스에서 나가기</button>
+              </div>
+            </span>
+          </div>
+          <div class="meta">참여 9/20 · 소유자 박교사</div>
+        </div>
+      </div>
+
+      <!-- 그룹 폴더 2 -->
+      <div class="wf-card folder is-interactive" title="그룹 안으로 들어가기" onclick="location.href='t-a-group-v2.html'" data-kind="folder">
+        <div class="fthumb">
+          <div class="tiles">
+            <div class="tile"></div><div class="tile"></div>
+            <div class="tile"></div><div class="tile"></div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="fname"><span class="ficon"></span> 2차시 — 해결책 제안</div>
+          <div class="fcount">캔버스 4개</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="frame-note">
+    <div class="tag">박스 레벨 · IA <b>A</b> (지휘석) v2 · PRD F1·F2·F7·F11 · 캔버스=주연 카드 / 그룹=폴더(클릭→내부) · 데스크톱 1440</div>
+  </div>
+
+  <script src="wf-screen.js?v=5"></script>
+  <script>
+    // 탭 필터 — 전체/진행 중/보관함/공유된 캔버스
+    (function () {
+      var grid = document.querySelector('.grid');
+      function apply(f) {
+        grid.querySelectorAll('[data-kind]').forEach(function (el) {
+          var kind = el.dataset.kind, show;
+          if (f === 'all') show = true;
+          else if (f === 'active') show = (kind === 'new') || (kind === 'canvas' && el.dataset.status === 'active');
+          else if (f === 'shared') show = (kind === 'canvas' && el.dataset.shared === 'true');
+          else show = true;
+          el.style.display = show ? '' : 'none';
+        });
+      }
+      document.querySelectorAll('.toolbar [data-filter]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.toolbar [data-filter]').forEach(function (c) { c.classList.remove('is-selected'); });
+          btn.classList.add('is-selected');
+          apply(btn.dataset.filter);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

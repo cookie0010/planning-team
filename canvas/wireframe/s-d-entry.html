@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-입장 · 캔버스 들어가기 (태블릿) — canvas 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    .enter-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--wf-space-24); }
+    .enter-card { width: min(440px, 100%); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-2); padding: var(--wf-space-32); }
+
+    .ec-head { text-align: center; margin-bottom: var(--wf-space-24); }
+    .ec-canvas { font-size: var(--wf-st9-size); font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); margin-bottom: var(--wf-space-8); }
+    .ec-sub { font-size: var(--wf-t6-size); color: var(--wf-text-sub); margin-top: var(--wf-space-12); line-height: 1.5; }
+
+    .field-group { margin-bottom: var(--wf-space-20); }
+    .field-label { display: flex; align-items: baseline; justify-content: space-between; font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); margin-bottom: var(--wf-space-8); }
+    .field-count { font-size: var(--wf-st13-size); font-weight: var(--wf-weight-regular); color: var(--wf-text-sub); }
+    .field-help { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin-top: var(--wf-space-8); line-height: 1.5; }
+    .field-help.is-error { color: var(--wf-danger); font-weight: var(--wf-weight-semibold); }
+
+    /* 비밀번호 4자리 — PIN 박스 */
+    .pin { display: flex; gap: 10px; }
+    .pin input { flex: 1 1 0; min-width: 0; height: 60px; text-align: center; font-family: var(--wf-font-family); font-size: var(--wf-st9-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); background: var(--wf-bg-base); border: 1.5px solid var(--wf-border); border-radius: var(--wf-radius-button); }
+    .pin input:focus { outline: none; border-color: var(--wf-primary); }
+
+    .ec-actions { margin-top: var(--wf-space-24); }
+    .login-alt { text-align: center; margin-top: var(--wf-space-16); font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .login-alt a { color: var(--wf-text-accent); font-weight: var(--wf-weight-bold); }
+
+    .frame-note { position: fixed; top: 12px; right: 12px; font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 6px 10px; max-width: 240px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="enter-screen">
+    <div class="enter-card">
+
+      <div class="ec-head">
+        <div class="ec-canvas">1모둠</div>
+        <span class="wf-badge c-green">✎ 참여자로 입장</span>
+        <p class="ec-sub">이름과 비밀번호를 입력하면 함께 만들기에 참여해요.</p>
+      </div>
+
+      <!-- 참여자·뷰어: 닉네임 + 비번4 -->
+      <form id="guestForm">
+        <div class="field-group">
+          <div class="field-label">
+            <span>이름(닉네임)</span>
+            <span class="field-count"><span id="nickCount">0</span>/15</span>
+          </div>
+          <input class="wf-field" id="nickField" type="text" maxlength="15" placeholder="예: 나무" autocomplete="off" />
+          <div class="field-help" id="nickHelp">최대 15자 · 같은 캔버스에 있는 이름은 쓸 수 없어요.</div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><span>비밀번호 4자리</span></div>
+          <div class="pin">
+            <input type="text" inputmode="numeric" maxlength="1" aria-label="비밀번호 1번째" />
+            <input type="text" inputmode="numeric" maxlength="1" aria-label="비밀번호 2번째" />
+            <input type="text" inputmode="numeric" maxlength="1" aria-label="비밀번호 3번째" />
+            <input type="text" inputmode="numeric" maxlength="1" aria-label="비밀번호 4번째" />
+          </div>
+          <div class="field-help">다시 들어올 때 같은 이름·비밀번호로 내 작업을 이어가요.</div>
+        </div>
+
+        <div class="ec-actions">
+          <button type="button" class="wf-btn is-block is-large" id="enterBtn">입장하기</button>
+          <div class="login-alt">이미 계정이 있나요? <a href="#">로그인하고 입장</a></div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <div class="frame-note">박스 레벨 · IA <b>D-입장</b> · PRD F5<br>QR이 권한을 결정(참여자/뷰어/편집자 따로 발급·10분 유지) — 입장자는 권한 못 바꿈. 이 화면=참여자·뷰어 QR(닉네임 ≤15자·중복 차단+비번4). 편집자 QR은 로그인 전용(별도). 입장 → D-승인 대기</div>
+
+  <script>
+    // 닉네임 글자수 + 중복 차단 시연
+    var TAKEN = ['환경지킴이', '모둠장', '나무', '하늘'];
+    var nick = document.getElementById('nickField');
+    var nickCount = document.getElementById('nickCount');
+    var nickHelp = document.getElementById('nickHelp');
+    var enterBtn = document.getElementById('enterBtn');
+
+    function validateNick() {
+      var v = nick.value.trim();
+      nickCount.textContent = nick.value.length;
+      if (v && TAKEN.indexOf(v) !== -1) {
+        nick.classList.add('is-error');
+        nickHelp.classList.add('is-error');
+        nickHelp.textContent = '이미 쓰고 있는 이름이에요. 다른 이름을 써 주세요.';
+        enterBtn.disabled = true;
+      } else {
+        nick.classList.remove('is-error');
+        nickHelp.classList.remove('is-error');
+        nickHelp.textContent = '최대 15자 · 같은 캔버스에 있는 이름은 쓸 수 없어요.';
+        enterBtn.disabled = false;
+      }
+    }
+    nick.addEventListener('input', validateNick);
+
+    // PIN 자동 이동
+    var pins = document.querySelectorAll('.pin input');
+    pins.forEach(function (p, i) {
+      p.addEventListener('input', function () {
+        if (p.value && i < pins.length - 1) pins[i + 1].focus();
+      });
+    });
+  </script>
+</body>
+</html>

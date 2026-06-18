@@ -3,20 +3,20 @@
   "evals": [
     {
       "id": 0,
-      "prompt": "docs/quizn-board-v2/prd-v4.md PDF로 만들어줘. 디자인팀에 공유할 파일이야.",
-      "expected_output": "docs/quizn-board-v2/prd-v4.pdf 생성 — 표지에 PRD: quizn-board-v2 / Project quizn-board-v2 / Version v4 / Date 2026-06-11, 본문에 HTML 주석 없음, 표·쪽번호 정상",
+      "prompt": "canvas/prd-v4.md PDF로 만들어줘. 디자인팀에 공유할 파일이야.",
+      "expected_output": "canvas/prd-v4.pdf 생성 — 표지에 PRD: canvas / Project canvas / Version v4 / Date 2026-06-11, 본문에 HTML 주석 없음, 표·쪽번호 정상",
       "files": []
     },
     {
       "id": 1,
-      "prompt": "docs/quizn-board/prd-v2.md 를 표지 없이 PDF로 뽑아줘",
+      "prompt": "quizn-board/prd-v2.md 를 표지 없이 PDF로 뽑아줘",
       "expected_output": "표지 없는 PDF 생성 — 구버전 문서(머리 블록 형식이 다름)도 에러 없이 변환, --no-cover 옵션 사용",
       "files": []
     },
     {
       "id": 2,
-      "prompt": "docs/quizn-board-v2/one-pager-v5.1.md 를 공유용 PDF로 변환해줘. 표지 제목은 'quizn-board-v2 기획안'으로 해줘",
-      "expected_output": "표지 제목이 'quizn-board-v2 기획안'으로 덮어쓰인 PDF 생성 — --title 옵션 사용, one-pager도 변환 가능",
+      "prompt": "canvas/one-pager-v5.1.md 를 공유용 PDF로 변환해줘. 표지 제목은 'canvas 기획안'으로 해줘",
+      "expected_output": "표지 제목이 'canvas 기획안'으로 덮어쓰인 PDF 생성 — --title 옵션 사용, one-pager도 변환 가능",
       "files": []
     }
   ]

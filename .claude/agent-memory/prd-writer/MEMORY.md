@@ -1,5 +1,5 @@
 # Memory Index
 
 - [User: Softn 기획자](user-softn.md) — sg.been2017@softn.kr, distribution-first 사고, 솔직한 수치 태도, 성급한 수렴 거부
-- [Project: quizn-board v2 (canvas형)](project-quizn-board.md) — ★최신 PRD = prd-v7 (2026-06-15, 뷰어 권한 추가로 역할 4단계+페이지 최대 30개). 계층=프로젝트>그룹>캔버스>페이지>객체. 다음 작업 전 prd-v7.md 필독. blocking OQ-02·03·22. one-pager-v5.1과 모순 미해소
+- [Project: canvas (구 quizn-board-v2)](project-quizn-board.md) — ⭐슬러그/폴더 = **canvas/** (2026-06-18 개명, 구 quizn-board-v2). 산출물 경로 = canvas/prd/, canvas/one-pager/ 등. ★최신 PRD = **prd-v1.0 (깨끗한 확정본, 2026-06-18)** — 내용은 prd-v0.17과 동일, 드래프트 스캐폴딩만 제거(머리 변경요약 단락·부록 변경이력·해소폐기 절 삭제) + **OQ를 1부터 재넘버**. (prd-v0.17·이전 버전 모두 보존.) OQ 매핑(구→신): 02→1(blocking, 검증모수), 12→2(보류, 계정체계), 26→3(보류, 신원연속성·OQ-2 직결), 13→4(설계, 동시조작충돌), 19→5(설계, 복제·규모), 24→6(설계, 소유자이전), 25→7(설계, 객체잠금 vs 편집자전권). 계층=프로젝트>캔버스(핵심)>페이지(≤30)>객체, 그룹=캔버스 동급 선택 묶음, 역할 4단계. 확정: 잠금(F8)=전원 작업동결(입장허용·해제는 소유자/편집자만), 내보내기, 보관 개념 제외, 다종 감정, 뷰어 자유 열람, 새캔버스 기본명 "새 캔버스", 제목 인라인편집, 정원임박 제거, A탭=전체/진행중/공유된캔버스(잠금=카드배지), F입장안내 변형 2종(정원초과/입장거절). blocking OQ-1 하나. one-pager-v5.1과 모순 미해소. ⚠️ 상세 메모(project-quizn-board.md) 본문은 stale(prd-v7·옛 OQ번호 시절) — 인덱스 줄을 신뢰할 것.
 - [Feedback: Softn PRD 반복 갭·워딩·템플릿 운용](feedback-softn-prd-patterns.md) — 진입동선·검증규모·수치 갭 패턴, 요약 문두=핵심 먼저, caveat 중복 금지, "완료 조건" 워딩, 개념 모델 사고 교훈(F4/F6 충돌), 새 템플릿 규칙

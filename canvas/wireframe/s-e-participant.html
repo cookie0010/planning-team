@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-참여자 · 함께 만들기 (태블릿) — canvas 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+
+    .screen { display: flex; flex-direction: column; height: 100vh; min-height: 640px; }
+
+    /* Top bar — 참여자 뷰: 좌측 캔버스명·역할, 정중앙 read-only 타이머, 우측 presence(접속자) */
+    .ctop { position: relative; display: flex; align-items: center; gap: var(--wf-space-12); height: 56px; padding: 0 var(--wf-space-16); background: var(--wf-bg-elevated); border-bottom: 1px solid var(--wf-border-hairline); }
+    .ctop .cname { font-size: var(--wf-st10-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .ctop .spacer { flex: 1; }
+    /* 타이머 — 헤더 정중앙 절대배치(B와 동일 위치). 참여자는 보기만 — 제어 버튼 없음 */
+    .etop-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: var(--wf-space-12); }
+    .timer { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--wf-radius-chip); background: var(--wf-a-grey-100); font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .presence { display: flex; align-items: center; cursor: pointer; }
+    .presence .wf-avatar { border: 2px solid var(--wf-bg-elevated); margin-left: -8px; }
+    .presence .wf-avatar:first-child { margin-left: 0; }
+
+    /* Canvas */
+    .canvas-wrap { flex: 1; position: relative; overflow: hidden; background: var(--wf-bg-base); }
+    .canvas { position: absolute; inset: 0; background:
+      repeating-linear-gradient(0deg, transparent, transparent 31px, var(--wf-a-grey-100) 31px, var(--wf-a-grey-100) 32px),
+      repeating-linear-gradient(90deg, transparent, transparent 31px, var(--wf-a-grey-100) 31px, var(--wf-a-grey-100) 32px),
+      var(--wf-bg-elevated);
+    }
+
+    /* sticky notes — B(t-b-edit)와 같은 객체 모델 */
+    .note { position: absolute; width: 156px; min-height: 102px; padding: 12px; border-radius: 10px; background: var(--wf-a-yellow-100); box-shadow: var(--wf-shadow-2); font-size: var(--wf-t6-size); color: var(--wf-text-strong); display: flex; flex-direction: column; }
+    .note .note-text { flex: 1 1 auto; }
+    .note .who { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-top: 18px; }
+
+    /* 본인 객체만 직접 선택·수정 가능 — 남의 객체엔 obj-bar가 안 뜬다 */
+    .note.is-mine { cursor: pointer; }
+    .note:not(.is-mine):not(.is-locked) { cursor: default; }
+
+    /* 받은 감정표현 — 종류별 칩(하단 우측 걸침). ⊕(추가)는 칩 좌측, 호버/선택 시만 */
+    .note .reacts { position: absolute; bottom: -12px; right: 8px; display: flex; align-items: center; gap: 4px; }
+    .note .chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); box-shadow: var(--wf-shadow-1); font-size: var(--wf-st13-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-default); }
+    .note .react-add { display: none; width: 24px; height: 22px; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--wf-border-hairline); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-chip); box-shadow: var(--wf-shadow-1); cursor: pointer; font-size: 13px; color: var(--wf-text-sub); }
+    .note:hover .react-add, .note.is-selected .react-add { display: inline-flex; }
+    .note .react-add:hover { color: var(--wf-text-default); background: var(--wf-a-grey-100); }
+
+    /* 감정 주기 피커 — ⊕ 클릭 시. 참가자당 한 포스트잇에 1개(1인 1감정·교체식) */
+    .react-picker { position: absolute; top: calc(100% + 14px); right: 0; display: none; align-items: center; gap: 2px; padding: 4px; background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-full); box-shadow: var(--wf-shadow-float); white-space: nowrap; z-index: 4; }
+    .note.show-picker .react-picker { display: inline-flex; }
+    .react-picker .rp { width: 36px; height: 36px; border: none; background: transparent; border-radius: var(--wf-radius-full); cursor: pointer; font-size: 18px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+    .react-picker .rp:hover { background: var(--wf-a-grey-100); }
+    .react-picker .rp.is-mine { background: var(--wf-primary-weak-bg); box-shadow: inset 0 0 0 2px var(--wf-primary); }
+
+    /* 객체 선택 + 수정 옵션 바 (본인 객체 클릭 시 위에 뜸) — 참여자 바엔 '잠금'이 없다(v11) */
+    .note.is-selected { outline: 2px solid var(--wf-primary); outline-offset: 2px; }
+    .obj-bar { position: absolute; bottom: calc(100% + 8px); left: 0; display: flex; align-items: center; gap: 3px; padding: 5px; background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); box-shadow: var(--wf-shadow-float); white-space: nowrap; }
+    .obj-bar .ob-btn { width: 32px; height: 32px; border: none; background: transparent; border-radius: 8px; cursor: pointer; color: var(--wf-text-default); font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+    .obj-bar .ob-btn:hover { background: var(--wf-a-grey-100); }
+    .obj-bar .ob-div { width: 1px; height: 20px; background: var(--wf-border); margin: 0 3px; }
+    .obj-bar .ob-author { display: inline-flex; align-items: center; gap: 6px; padding: 2px 6px 2px 4px; border: none; background: transparent; border-radius: var(--wf-radius-full); font-family: var(--wf-font-family); font-size: var(--wf-st13-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); cursor: pointer; }
+    .obj-bar .ob-author:hover { background: var(--wf-a-grey-100); }
+    .obj-bar .ob-name { display: none; }
+    .obj-bar .ob-author.show-name .ob-name { display: inline; }
+
+    /* 객체 단위 잠금 배지 — 편집자가 잠근 것. 참여자는 잠그지도, 잠긴 걸 건드리지도 못한다 */
+    .note.is-locked { cursor: not-allowed; }
+    .note .lock-badge { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: var(--wf-radius-full); background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-1); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: var(--wf-text-sub); }
+
+    .cursor { position: absolute; font-size: var(--wf-t7-size); color: var(--wf-text-accent); font-weight: var(--wf-weight-bold); }
+
+    /* page nav */
+    .pagenav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 12px; pointer-events: none; }
+    .pagenav button { pointer-events: auto; width: 44px; height: 44px; border-radius: var(--wf-radius-full); border: none; background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-3); color: var(--wf-text-default); font-size: 18px; cursor: pointer; }
+    .pageind { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); padding: 5px 12px; }
+
+    /* Bottom toolbar — 플로팅 도구 팔레트(B와 동일). 참여자도 객체 생성 도구는 같다 */
+    .toolbar { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 6;
+      display: flex; align-items: center; gap: 6px; padding: 8px;
+      background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline);
+      border-radius: var(--wf-radius-full); box-shadow: var(--wf-shadow-float); }
+    .tgroup { display: flex; align-items: center; gap: 4px; }
+    .tdiv { width: 1px; height: 28px; background: var(--wf-border); margin: 0 4px; }
+    .titem { width: 42px; height: 42px; border-radius: 10px; border: none; background: transparent; color: var(--wf-text-default); font-size: 19px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .titem:hover { background: var(--wf-a-grey-100); }
+    .titem.is-active { background: var(--wf-primary-weak-bg); color: var(--wf-text-accent); }
+    .titem.is-add { color: var(--wf-text-sub); }
+
+    /* 접속자 모달 (presence 클릭) — B(소유자·편집자) 모달과 동일 규격. 참여자는 역할 셀렉트가 전부 비활성(보기 전용) */
+    .dim { position: fixed; inset: 0; background: var(--wf-dimmed); display: none; align-items: center; justify-content: center; padding: var(--wf-space-24); z-index: 50; }
+    .dim.is-open { display: flex; }
+    .people { width: min(560px, 96vw); background: var(--wf-bg-float); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-float); padding: var(--wf-space-32); }
+    .share-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--wf-space-16); margin-bottom: var(--wf-space-16); }
+    .share-head h2 { margin: 0 0 6px; color: var(--wf-text-strong); }
+    .share-head p { margin: 0; font-size: var(--wf-t6-size); color: var(--wf-text-sub); }
+    .close { width: 36px; height: 36px; border-radius: var(--wf-radius-full); border: none; background: var(--wf-a-grey-100); color: var(--wf-text-sub); cursor: pointer; font-size: 16px; flex: none; }
+    .people-list { max-height: 400px; overflow-y: auto; margin-top: var(--wf-space-8); }
+    .role-select { width: 104px; flex: none; height: 36px; padding: 0 10px; font-size: var(--wf-t7-size); font-family: var(--wf-font-family); color: var(--wf-text-default); cursor: pointer; }
+    .role-select:disabled { cursor: default; color: var(--wf-text-sub); }
+    .people-note { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin: var(--wf-space-16) 0 0; line-height: 1.5; }
+
+    .frame-note { position: fixed; top: 64px; right: 12px; font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 6px 10px; max-width: 250px; line-height: 1.5; }
+
+    /* 잠금 상태 — 상단바 바로 아래 상시 배너 + 도구 팔레트 비활성 */
+    .lock-banner { display: none; align-items: center; justify-content: center; gap: var(--wf-space-8); padding: var(--wf-space-12) var(--wf-space-16); background: var(--wf-primary-weak-bg); border-bottom: 1px solid var(--wf-border-hairline); color: var(--wf-text-accent); font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); }
+    .screen.is-locked .lock-banner { display: flex; }
+    /* 잠금 중엔 도구 팔레트 흐리게·비활성 (작업 불가) */
+    .screen.is-locked .toolbar { opacity: .45; pointer-events: none; }
+
+    /* 데모 토글 (와이어프레임 검증용 — 실제 화면엔 없음) */
+    .demo-bar { position: fixed; bottom: 12px; left: 12px; z-index: 60; display: flex; align-items: center; gap: var(--wf-space-8); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: var(--wf-radius-chip); padding: var(--wf-space-8) var(--wf-space-12); box-shadow: var(--wf-shadow-1); }
+    .demo-bar .demo-label { font-size: var(--wf-st13-size); color: var(--wf-text-sub); }
+    .demo-bar .wf-chip { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="screen">
+
+    <!-- Top bar -->
+    <header class="ctop">
+      <span class="cname">1모둠</span>
+      <span class="wf-badge c-green">✎ 참여자</span>
+      <span class="spacer"></span>
+      <!-- 정중앙: read-only 타이머 (참여자는 제어 불가) -->
+      <span class="etop-center">
+        <span class="timer">⏱ 12:30</span>
+      </span>
+      <span class="presence" id="presenceBtn" title="접속자 보기">
+        <span class="wf-avatar is-sm">나</span>
+        <span class="wf-avatar is-sm">민</span>
+        <span class="wf-avatar is-sm">지</span>
+        <span class="wf-avatar is-sm">+8</span>
+      </span>
+    </header>
+
+    <!-- 잠금 상태 배너 (상단바 바로 아래·상시) — 잠금 중 들어온 학생도 본다 -->
+    <div class="lock-banner">🔒 관리자가 캔버스를 잠갔어요 · 지금은 보기만 할 수 있어요</div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap">
+      <div class="canvas" id="canvas">
+        <div class="pageind">2 / 5 페이지</div>
+
+        <!-- 본인 객체: 클릭 → 수정 옵션 바(색·글자·삭제 + 우측 끝 작성자 아바타). 참여자 바엔 '잠금' 없음 -->
+        <div class="note is-mine is-selected" style="left:80px; top:80px;">
+          <nav class="obj-bar">
+            <button class="ob-btn" title="색 바꾸기">●</button>
+            <button class="ob-btn" title="글자">T</button>
+            <button class="ob-btn" title="삭제">🗑</button>
+            <span class="ob-div"></span>
+            <button class="ob-author" title="작성자 보기"><span class="wf-avatar is-sm">나</span><span class="ob-name">나무 (나)</span></button>
+          </nav>
+          <div class="note-text">텀블러 쓰기<br />운동 하자</div>
+          <div class="who">나무 (나)</div>
+          <div class="reacts">
+            <button class="react-add" title="감정 추가">⊕</button>
+            <span class="chip">❤️ 2</span>
+          </div>
+          <div class="react-picker">
+            <button class="rp" title="좋아요">❤️</button><button class="rp" title="최고">👍</button><button class="rp" title="놀람">😮</button><button class="rp" title="웃음">😂</button><button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+
+        <!-- 남의 객체: 옮기거나 고칠 수 없고, 감정만 줄 수 있다(⊕은 호버/선택 시). 내가 이미 ❤️를 줌 -->
+        <div class="note" style="left:300px; top:130px; background:var(--wf-a-teal-100);">
+          <div class="note-text">교문 앞 쓰레기<br />줄이기</div>
+          <div class="who">환경지킴이</div>
+          <div class="reacts">
+            <button class="react-add" title="감정 바꾸기">⊕</button>
+            <span class="chip">❤️ 3</span><span class="chip">👍 2</span>
+          </div>
+          <div class="react-picker">
+            <button class="rp is-mine" title="내 감정표현">❤️</button><button class="rp" title="최고">👍</button><button class="rp" title="놀람">😮</button><button class="rp" title="웃음">😂</button><button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+
+        <!-- 남의 객체: 감정 0 → 칩 없음, ⊕만(호버/선택 시) -->
+        <div class="note" style="left:540px; top:90px; background:var(--wf-a-purple-100);">
+          <div class="note-text">급식 잔반<br />캠페인</div>
+          <div class="who">모둠장</div>
+          <div class="reacts">
+            <button class="react-add" title="감정 주기">⊕</button>
+          </div>
+          <div class="react-picker">
+            <button class="rp" title="좋아요">❤️</button><button class="rp" title="최고">👍</button><button class="rp" title="놀람">😮</button><button class="rp" title="웃음">😂</button><button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+
+        <!-- 잠긴 객체(편집자가 잠금): 누구도 못 건드린다. 감정은 줄 수 있음 -->
+        <div class="note is-locked" style="left:360px; top:300px;">
+          <span class="lock-badge" title="편집자가 잠금 — 수정·이동·삭제 불가">🔒</span>
+          <div class="note-text">분리수거함을<br />색깔로 구분</div>
+          <div class="who">환경지킴이</div>
+          <div class="reacts">
+            <button class="react-add" title="감정 주기">⊕</button>
+            <span class="chip">👍 4</span>
+          </div>
+          <div class="react-picker">
+            <button class="rp" title="좋아요">❤️</button><button class="rp" title="최고">👍</button><button class="rp" title="놀람">😮</button><button class="rp" title="웃음">😂</button><button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+
+        <div class="cursor" style="left:470px; top:260px;">▷ 하늘</div>
+
+        <!-- 플로팅 도구 팔레트 (B와 동일 — 참여자도 객체 생성) -->
+        <nav class="toolbar">
+          <div class="tgroup">
+            <button class="titem is-active" title="선택">↖</button>
+            <button class="titem" title="이동(손)">✥</button>
+          </div>
+          <span class="tdiv"></span>
+          <div class="tgroup">
+            <button class="titem" title="텍스트">T</button>
+            <button class="titem" title="포스트잇">▭</button>
+            <button class="titem" title="펜">✎</button>
+            <button class="titem" title="도형">◇</button>
+          </div>
+          <span class="tdiv"></span>
+          <div class="tgroup">
+            <button class="titem is-add" title="더 많은 도구 (도구 미확정)">+</button>
+          </div>
+          <span class="tdiv"></span>
+          <div class="tgroup">
+            <button class="titem" title="실행취소">↶</button>
+            <button class="titem" title="다시실행">↷</button>
+          </div>
+        </nav>
+      </div>
+
+      <div class="pagenav">
+        <button title="이전 페이지">‹</button>
+        <button title="다음 페이지">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 접속자 모달 (presence 클릭으로 열림) — B와 동일 레이아웃. 참여자는 역할 셀렉트가 전부 비활성(보기 전용) -->
+  <div class="dim" id="peopleDim">
+    <div class="people">
+      <div class="share-head">
+        <div>
+          <h2 class="wf-st9 wf-bold">접속자 12명</h2>
+          <p>소유자 1 · 편집자 1 · 참여자 8 · 뷰어 2</p>
+        </div>
+        <button class="close" id="peopleClose">✕</button>
+      </div>
+      <div class="wf-list people-list">
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">김</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">김선생</div><div class="wf-list-row__desc">gd.hong@school.kr</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option>소유자</option></select>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">이</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">이선생</div><div class="wf-list-row__desc">lee.s@school.kr</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option selected>편집자</option><option>참여자</option><option>뷰어</option></select>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">나</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">나무 (나)</div><div class="wf-list-row__desc">비로그인</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option>편집자</option><option selected>참여자</option><option>뷰어</option></select>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">환</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">환경지킴이</div><div class="wf-list-row__desc">비로그인</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option>편집자</option><option selected>참여자</option><option>뷰어</option></select>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">모</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">모둠장</div><div class="wf-list-row__desc">비로그인</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option>편집자</option><option selected>참여자</option><option>뷰어</option></select>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">관</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">관찰이</div><div class="wf-list-row__desc">비로그인</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option>편집자</option><option>참여자</option><option selected>뷰어</option></select>
+        </div>
+      </div>
+      <p class="people-note">💡 누가 함께 있는지 볼 수 있어요.</p>
+    </div>
+  </div>
+
+  <!-- 데모 토글 (검증용) — 캔버스 정상/잠금 상태 전환 -->
+  <div class="demo-bar" aria-label="와이어프레임 데모용 — 캔버스 상태">
+    <span class="demo-label">데모:</span>
+    <button class="wf-chip is-selected" data-lock-btn="off">정상</button>
+    <button class="wf-chip" data-lock-btn="on">잠금</button>
+  </div>
+
+  <div class="frame-note">박스 레벨 · IA <b>E-참여자</b> · PRD F4·F10·F12·F8<br>본인 객체만 편집(수정바=잠금 없음) · 남의 객체는 감정만 · 감정=포스트잇 다종·1인 1감정 · 접속자=보기 전용 · <b>캔버스 잠금(F8)=상단 배너+도구 비활성</b>(작업 동결, 입장·열람은 됨)</div>
+
+  <script>
+    // standalone — 교사용 wf-screen.js 미부착. 와이어프레임 검증용 최소 인터랙션만.
+    var canvas = document.getElementById('canvas');
+
+    // 데모: 캔버스 잠금 토글 (상단 배너 + 도구 비활성)
+    var screenEl = document.querySelector('.screen');
+    document.querySelectorAll('[data-lock-btn]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('[data-lock-btn]').forEach(function (x) { x.classList.remove('is-selected'); });
+        b.classList.add('is-selected');
+        screenEl.classList.toggle('is-locked', b.dataset.lockBtn === 'on');
+      });
+    });
+
+    // presence 클릭 → 접속자 모달(보기 전용)
+    var peopleDim = document.getElementById('peopleDim');
+    document.getElementById('presenceBtn').addEventListener('click', function () { peopleDim.classList.add('is-open'); });
+    document.getElementById('peopleClose').addEventListener('click', function () { peopleDim.classList.remove('is-open'); });
+    peopleDim.addEventListener('click', function (e) { if (e.target === this) peopleDim.classList.remove('is-open'); });
+
+    // ⊕ → 감정 피커 토글 (한 번에 하나만)
+    document.querySelectorAll('.note .react-add').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var note = btn.closest('.note');
+        var wasOpen = note.classList.contains('show-picker');
+        document.querySelectorAll('.note.show-picker').forEach(function (n) { n.classList.remove('show-picker'); });
+        if (!wasOpen) note.classList.add('show-picker');
+      });
+    });
+
+    // 피커에서 감정 선택 → 1인 1감정(교체식)
+    document.querySelectorAll('.react-picker .rp').forEach(function (rp) {
+      rp.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var picker = rp.closest('.react-picker');
+        picker.querySelectorAll('.rp').forEach(function (x) { x.classList.remove('is-mine'); });
+        rp.classList.add('is-mine');
+        rp.closest('.note').classList.remove('show-picker');
+      });
+    });
+
+    // 본인 객체 클릭 → 선택(수정 옵션 바). 남의/잠긴 객체는 선택 안 됨
+    document.querySelectorAll('.note').forEach(function (note) {
+      note.addEventListener('click', function () {
+        if (!note.classList.contains('is-mine')) return;
+        document.querySelectorAll('.note.is-selected').forEach(function (n) { if (n !== note) n.classList.remove('is-selected'); });
+        note.classList.add('is-selected');
+      });
+    });
+
+    // 작성자 아바타 클릭 → 풀네임 토글
+    document.querySelectorAll('.obj-bar .ob-author').forEach(function (a) {
+      a.addEventListener('click', function (e) { e.stopPropagation(); a.classList.toggle('show-name'); });
+    });
+
+    // 빈 캔버스 클릭 → 선택/피커 해제
+    canvas.addEventListener('click', function (e) {
+      if (e.target.closest('.note') || e.target.closest('.toolbar')) return;
+      document.querySelectorAll('.note.is-selected').forEach(function (n) { n.classList.remove('is-selected'); });
+      document.querySelectorAll('.note.show-picker').forEach(function (n) { n.classList.remove('show-picker'); });
+    });
+  </script>
+</body>
+</html>

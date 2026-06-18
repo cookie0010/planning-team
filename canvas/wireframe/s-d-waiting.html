@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-승인 대기 · 관리자 승인 기다리는 중 (태블릿) — canvas 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    .wait-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--wf-space-24); }
+    .wait-card { width: min(440px, 100%); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-2); padding: var(--wf-space-48) var(--wf-space-32) var(--wf-space-32); text-align: center; }
+
+    /* 대기 스피너 (모노크롬) */
+    .spinner { width: 56px; height: 56px; margin: 0 auto var(--wf-space-24); border-radius: var(--wf-radius-full); border: 4px solid var(--wf-a-grey-200); border-top-color: var(--wf-primary); animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .wait-title { font-size: var(--wf-st9-size); font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); margin-bottom: var(--wf-space-12); }
+    .wait-desc { font-size: var(--wf-t6-size); color: var(--wf-text-sub); line-height: 1.6; margin-bottom: var(--wf-space-24); }
+
+    /* 입장 요청 요약 */
+    .req-box { display: flex; align-items: center; gap: var(--wf-space-12); text-align: left; background: var(--wf-a-grey-50); border-radius: var(--wf-radius-card); padding: var(--wf-space-16); margin-bottom: var(--wf-space-24); }
+    .req-box .rb-body { flex: 1; min-width: 0; }
+    /* 닉네임이 위(강조), 참여 중인 캔버스 이름이 아래(부가) */
+    .req-box .rb-name { font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    /* 캔버스 이름이 길어도 2줄까지만 보이고 말줄임 — 배지를 밀어내지 않음 */
+    .req-box .rb-canvas { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin-top: var(--wf-space-4); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    /* 역할 배지 — 기본 is-small이 작아 키움 */
+    .req-box .role-badge { flex: none; align-self: flex-start; font-size: var(--wf-t7-size); padding: var(--wf-space-8) var(--wf-space-16); border-radius: var(--wf-radius-chip); }
+
+    .wait-hint { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin-top: var(--wf-space-16); line-height: 1.6; }
+
+    .frame-note { position: fixed; top: 12px; right: 12px; font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 6px 10px; max-width: 240px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="wait-screen">
+    <div class="wait-card">
+      <div class="spinner" aria-hidden="true"></div>
+
+      <h1 class="wait-title">관리자 승인을 기다리는 중</h1>
+      <p class="wait-desc">관리자가 승인하면 자동으로 캔버스에 들어가요.<br>이 화면을 닫지 말고 잠깐만 기다려 주세요.</p>
+
+      <div class="req-box">
+        <span class="wf-avatar">나</span>
+        <div class="rb-body">
+          <div class="rb-name">나무</div>
+          <div class="rb-canvas">3학년 2반 환경 프로젝트 — 우리 학교 쓰레기 줄이기 대작전</div>
+        </div>
+        <span class="wf-badge c-green role-badge">참여자</span>
+      </div>
+
+      <button class="wf-btn is-weak is-block">입장 취소</button>
+
+      <p class="wait-hint">💡 관리자가 <b>입장 자동 승인</b>을 켜 두면 이 대기 없이 바로 들어가요.</p>
+    </div>
+  </div>
+
+  <div class="frame-note">박스 레벨 · IA <b>D-승인 대기</b> · PRD F5<br>입장 직후 관리자(소유자·편집자) 승인 대기 · 승인 → E / 거절·정원초과·잠금 → F · 자동 승인이면 이 단계 건너뜀</div>
+</body>
+</html>

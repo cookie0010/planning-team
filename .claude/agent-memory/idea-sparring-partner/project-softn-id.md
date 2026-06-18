@@ -1,6 +1,6 @@
 ---
 name: project-softn-id
-description: Softn ID 통합 계정 + 통합 홈페이지 아이디어 (스파링 진행 중). 정리본 docs/softn-id/working-notes.md
+description: Softn ID 통합 계정 + 통합 홈페이지 아이디어 (스파링 진행 중). 정리본 softn-id/working-notes.md
 metadata:
   type: project
 ---
@@ -25,6 +25,6 @@ Softn ID = sourced_id 기반 통합 계정(카카오·구글 소셜로그인) + 
 
 **열린 질문(PRD 전 닫을 것):** ①프로토타입 학습 질문(지표 목표치 대신 성공/실패 판단기준) — 가장 큰 구멍. ②[3-상세] 써보기 클릭 시 로그인/비로그인 분기 UX. ③데모블록 충실도(정적/GIF/임베드, 파트너=GIF추천). ④account linking 자발적 연동 정체 리스크(계속 미검증).
 
-**상태/다음 단계:** [3-상세] 확정 → [A] 로그인 톤 재정렬 → [2] Blog(경량) → 전체 흐름 확정 → idea-deep-dive/one-pager 갱신 → @prd-writer 핸드오프. 정리본=docs/softn-id/working-notes.md. (참고: 학습 질문 1번을 안 박고 화면부터 확정 시 "무엇을 증명하는 프로토인지 모르는" 리스크 — 화면과 병렬로 박아둘 것 권고함.)
+**상태/다음 단계:** [3-상세] 확정 → [A] 로그인 톤 재정렬 → [2] Blog(경량) → 전체 흐름 확정 → idea-deep-dive/one-pager 갱신 → @prd-writer 핸드오프. 정리본=softn-id/working-notes.md. (참고: 학습 질문 1번을 안 박고 화면부터 확정 시 "무엇을 증명하는 프로토인지 모르는" 리스크 — 화면과 병렬로 박아둘 것 권고함.)
 
 관련: [[user-softn]], [[feedback-distribution-first]], [[feedback-no-premature-save]]

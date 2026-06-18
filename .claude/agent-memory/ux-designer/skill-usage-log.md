@@ -4,7 +4,7 @@
 
 ---
 
-## 2026-06-15 · quizn-board-v2 박스 와이어프레임 v1
+## 2026-06-15 · canvas 박스 와이어프레임 v1
 
 **ux-designer (foundation)** — 전 화면 토대.
 - 무엇/왜: 학생 태블릿·폰 화면 설계의 모바일 규칙(thumb zone·44px·하단 도구바)과 협업 presence 패턴 근거로 `08-mobile-ux.md`, `12a-presence-awareness.md` 정독.

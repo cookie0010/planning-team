@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>B · 캔버스 편집 (편집자 뷰) — canvas 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <link rel="stylesheet" href="wf-screen.css?v=5" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    .editor { display: flex; flex-direction: column; height: 100vh; min-height: 680px; }
+
+    /* Top bar (편집자 도구바) */
+    .etop { position: relative; display: flex; align-items: center; gap: var(--wf-space-12); height: 56px; padding: 0 var(--wf-space-16); background: var(--wf-bg-elevated); border-bottom: 1px solid var(--wf-border-hairline); }
+    /* 타이머+잠금 세트 — 헤더 정중앙 절대배치 */
+    .etop-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: var(--wf-space-12); }
+    .back { width: 38px; height: 38px; border-radius: var(--wf-radius-full); border: none; background: var(--wf-a-grey-100); color: var(--wf-text-default); cursor: pointer; font-size: 17px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+    .back:hover { background: var(--wf-a-grey-200); }
+    .cname { font-size: var(--wf-st10-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .etop .spacer { flex: 1; }
+    .timer { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px 7px 12px; border-radius: var(--wf-radius-chip); background: var(--wf-a-grey-100); font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .timer .tbtn { border: none; background: var(--wf-bg-elevated); border-radius: 8px; width: 26px; height: 26px; cursor: pointer; color: var(--wf-text-default); font-size: 12px; }
+    /* 타이머 시간 설정 드롭다운 (▾) */
+    .timer-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; width: 244px; background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline); border-radius: 14px; box-shadow: var(--wf-shadow-float); padding: 14px; display: none; text-align: left; font-weight: var(--wf-weight-regular); }
+    .timer-menu.is-open { display: block; }
+    .tm-head { font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); margin-bottom: 10px; }
+    .tm-display { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .tm-time { font-size: 34px; line-height: 1; font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); font-variant-numeric: tabular-nums; }
+    .tm-stop { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border: 1px solid var(--wf-border-strong); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-button); cursor: pointer; font-family: var(--wf-font-family); font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-default); }
+    .tm-stop:hover { background: var(--wf-a-grey-100); }
+    .tm-divider { height: 1px; background: var(--wf-border-hairline); margin: 12px 0; }
+    .tm-adjust { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    /* 설정 드롭다운 ([설정] 버튼 → 익명·비번4·삭제) */
+    .settings-wrap { position: relative; display: inline-flex; }
+    .settings-menu { position: absolute; top: calc(100% + var(--wf-space-8)); right: 0; z-index: 30; width: 288px; background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-card); box-shadow: var(--wf-shadow-float); padding: var(--wf-space-20) var(--wf-space-20) var(--wf-space-16); display: none; text-align: left; }
+    .settings-menu.is-open { display: block; }
+    .sm-head { font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); margin-bottom: var(--wf-space-8); }
+    .sm-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--wf-space-16); padding: var(--wf-space-16) 0; }
+    .sm-label { font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); }
+    .sm-desc { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-top: var(--wf-space-4); max-width: 196px; line-height: 1.5; }
+    .sm-locked { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-top: var(--wf-space-4); }
+    .sm-divider { height: 1px; background: var(--wf-border-hairline); margin: var(--wf-space-12) 0; }
+    /* toggle switch (설정·승인 공용) */
+    .switch { position: relative; width: 44px; height: 26px; flex: none; cursor: pointer; }
+    .switch input { display: none; }
+    .switch .track { display: block; width: 44px; height: 26px; border-radius: 999px; background: var(--wf-a-grey-300); transition: background var(--wf-duration-fast) var(--wf-ease); }
+    .switch .knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-1); transition: left var(--wf-duration-fast) var(--wf-ease); }
+    .switch input:checked + .track { background: var(--wf-primary); }
+    .switch input:checked ~ .knob { left: 21px; }
+    .switch.is-locked { cursor: not-allowed; opacity: .6; }
+    .presence { display: flex; align-items: center; cursor: pointer; }
+    .presence .wf-avatar { border: 2px solid var(--wf-bg-elevated); margin-left: -8px; }
+    .presence .wf-avatar:first-child { margin-left: 0; }
+
+    /* 접속자 모달 (presence 클릭 → 참여자 정보 + 편집자 임명) */
+    .people { width: min(560px, 96vw); background: var(--wf-bg-float); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-float); padding: var(--wf-space-32); }
+    .people-list { max-height: 400px; overflow-y: auto; margin-top: var(--wf-space-8); }
+    /* 상단바 '입장 대기 N' 표시 (요청 있을 때만 — presence 좌측) */
+    @keyframes entryPulse {
+      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--wf-primary) 55%, transparent); }
+      70%  { box-shadow: 0 0 0 8px color-mix(in srgb, var(--wf-primary) 0%, transparent); }
+      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--wf-primary) 0%, transparent); }
+    }
+    .entry-badge { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border: none; border-radius: var(--wf-radius-chip); background: var(--wf-primary); color: var(--wf-text-on-primary); font-family: var(--wf-font-family); font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); cursor: pointer; animation: entryPulse 1.5s ease-out infinite; }
+    .entry-badge:hover { background: var(--wf-primary-hover); }
+    /* 입장 승인 모달 */
+    .approve-modal { width: min(520px, 96vw); }
+    .ap-auto { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 14px; font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .pending-list { max-height: 320px; overflow-y: auto; }
+    .pend-actions { display: inline-flex; gap: 6px; flex: none; }
+    .approve-all { margin-top: 14px; }
+    /* 역할 셀렉트 (편집자/참여자/뷰어 선택으로 임명) */
+    .role-select { width: 104px; flex: none; height: 36px; padding: 0 10px; font-size: var(--wf-t7-size); font-family: var(--wf-font-family); color: var(--wf-text-default); cursor: pointer; }
+    .role-select:disabled { cursor: default; color: var(--wf-text-sub); }
+    .people-note { font-size: var(--wf-t6-size); color: var(--wf-text-sub); margin: var(--wf-space-16) 0 0; line-height: 1.5; }
+    /* 접속자 행 우측 액션 — 역할 셀렉트 + 내보내기(강제 퇴장) */
+    .people-list .wf-list-row__body { min-width: 0; }
+    .row-end { display: inline-flex; align-items: center; gap: var(--wf-space-8); flex: none; }
+    .kick-btn { white-space: nowrap; }
+    /* 내보내기 확인 모달 (접속자 모달 위에 겹침) */
+    #kickDim { z-index: 60; }
+    .confirm-card { width: min(400px, 96vw); background: var(--wf-bg-float); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-float); padding: var(--wf-space-32); }
+    .confirm-card h2 { margin: 0 0 var(--wf-space-12); color: var(--wf-text-strong); }
+    .confirm-card p { margin: 0 0 var(--wf-space-24); font-size: var(--wf-t6-size); color: var(--wf-text-sub); line-height: 1.6; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: var(--wf-space-8); }
+    .icon-btn { width: 38px; height: 38px; border-radius: var(--wf-radius-full); border: none; cursor: pointer; background: var(--wf-a-grey-100); color: var(--wf-text-sub); display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+    .icon-btn:hover { background: var(--wf-a-grey-200); }
+
+    /* Page rail (편집자: 페이지 구성) */
+    .pagebar { display: flex; align-items: center; gap: 8px; padding: 10px var(--wf-space-16); background: var(--wf-bg-elevated); border-bottom: 1px solid var(--wf-border-hairline); }
+    .pagebar .pages { display: flex; gap: 6px; align-items: center; overflow-x: auto; }
+    .pchip { flex: none; width: 64px; height: 44px; border-radius: 8px; border: 1.5px solid var(--wf-border-hairline); background: repeating-linear-gradient(45deg, var(--wf-a-grey-100), var(--wf-a-grey-100) 6px, var(--wf-a-grey-50) 6px, var(--wf-a-grey-50) 12px); cursor: pointer; position: relative; font-size: var(--wf-st13-size); color: var(--wf-text-sub); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px; }
+    .pchip.is-active { border-color: var(--wf-primary); }
+    .add-page { flex: none; height: 44px; padding: 0 12px; border-radius: 8px; border: 1.5px dashed var(--wf-border-strong); background: transparent; cursor: pointer; color: var(--wf-text-sub); font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); }
+    .pagebar .spacer { flex: 1; }
+    .pagecount { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+
+    /* Canvas */
+    .canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+    .canvas { position: absolute; inset: 0; background:
+      repeating-linear-gradient(0deg, transparent, transparent 31px, var(--wf-a-grey-100) 31px, var(--wf-a-grey-100) 32px),
+      repeating-linear-gradient(90deg, transparent, transparent 31px, var(--wf-a-grey-100) 31px, var(--wf-a-grey-100) 32px),
+      var(--wf-bg-elevated); }
+    .note { position: absolute; width: 168px; min-height: 110px; padding: 12px; border-radius: 10px; background: var(--wf-a-yellow-100); box-shadow: var(--wf-shadow-2); font-size: var(--wf-t6-size); color: var(--wf-text-strong); display: flex; flex-direction: column; }
+    .note .note-text { flex: 1 1 auto; }
+    /* 작성자 — 본문 아래, 바닥쪽으로 */
+    .note .who { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-top: 20px; }
+    /* 받은 감정표현 — 하단 모서리에 '걸쳐있는' 배지(우측). 받은 것 + ⊕(감정 추가) */
+    /* 받은 감정표현 — 종류별 칩(하단 우측 걸침). ⊕(추가)는 칩 좌측, 호버/선택 시만 */
+    .note .reacts { position: absolute; bottom: -12px; right: 8px; display: flex; align-items: center; gap: 4px; }
+    .note .chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); box-shadow: var(--wf-shadow-1); font-size: var(--wf-st13-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-default); }
+    .note .react-add { display: none; width: 24px; height: 22px; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--wf-border-hairline); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-chip); box-shadow: var(--wf-shadow-1); cursor: pointer; font-size: 13px; color: var(--wf-text-sub); }
+    .note:hover .react-add, .note.is-selected .react-add { display: inline-flex; }
+    .note .react-add:hover { color: var(--wf-text-default); background: var(--wf-a-grey-100); }
+    /* 감정 주기 피커 — ⊕ 클릭 시 (우하단 ⊕ 아래로) */
+    .react-picker { position: absolute; top: calc(100% + 14px); right: 0; display: none; align-items: center; gap: 2px; padding: 4px; background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-full); box-shadow: var(--wf-shadow-float); white-space: nowrap; z-index: 4; }
+    .note.show-picker .react-picker { display: inline-flex; }
+    .react-picker .rp { width: 34px; height: 34px; border: none; background: transparent; border-radius: var(--wf-radius-full); cursor: pointer; font-size: 17px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+    .react-picker .rp:hover { background: var(--wf-a-grey-100); }
+    /* 내가 이미 준 감정(1인 1감정) — 선택 표시 */
+    .react-picker .rp.is-mine { background: var(--wf-primary-weak-bg); box-shadow: inset 0 0 0 2px var(--wf-primary); }
+
+    /* 객체 선택 + 수정 옵션 바 (객체 클릭 시 위에 뜸) */
+    .note.is-selected { outline: 2px solid var(--wf-primary); outline-offset: 2px; }
+    .obj-bar { position: absolute; bottom: calc(100% + 8px); left: 0; display: flex; align-items: center; gap: 3px; padding: 5px; background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); box-shadow: var(--wf-shadow-float); white-space: nowrap; }
+    .obj-bar .ob-btn { width: 30px; height: 30px; border: none; background: transparent; border-radius: 8px; cursor: pointer; color: var(--wf-text-default); font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+    .obj-bar .ob-btn:hover { background: var(--wf-a-grey-100); }
+    .obj-bar .ob-div { width: 1px; height: 20px; background: var(--wf-border); margin: 0 3px; }
+    .obj-bar .ob-author { display: inline-flex; align-items: center; gap: 6px; padding: 2px 6px 2px 4px; border: none; background: transparent; border-radius: var(--wf-radius-full); font-family: var(--wf-font-family); font-size: var(--wf-st13-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-sub); cursor: pointer; }
+    .obj-bar .ob-author:hover { background: var(--wf-a-grey-100); }
+    .obj-bar .ob-name { display: none; }
+    .obj-bar .ob-author.show-name .ob-name { display: inline; }
+    /* 객체 단위 잠금 배지 (캔버스 전체 잠금과 구분) */
+    .note .lock-badge { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: var(--wf-radius-full); background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-1); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: var(--wf-text-sub); }
+    .cursor { position: absolute; font-size: var(--wf-t7-size); color: var(--wf-text-accent); font-weight: var(--wf-weight-bold); }
+    .tpl-tag { position: absolute; top: 12px; left: 16px; }
+    .pagenav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 12px; pointer-events: none; }
+    .pagenav button { pointer-events: auto; width: 44px; height: 44px; border-radius: var(--wf-radius-full); border: none; background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-3); color: var(--wf-text-default); font-size: 18px; cursor: pointer; }
+
+    /* Bottom toolbar (플로팅 도구 팔레트 — FigJam/Miro식, 캔버스 위에 떠 있음) */
+    .toolbar { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 6;
+      display: flex; align-items: center; gap: 6px; padding: 8px;
+      background: var(--wf-bg-float); border: 1px solid var(--wf-border-hairline);
+      border-radius: var(--wf-radius-full); box-shadow: var(--wf-shadow-float); }
+    .tgroup { display: flex; align-items: center; gap: 4px; }
+    .tdiv { width: 1px; height: 28px; background: var(--wf-border); margin: 0 4px; }
+    .titem { width: 42px; height: 42px; border-radius: 10px; border: none; background: transparent; color: var(--wf-text-default); font-size: 19px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .titem:hover { background: var(--wf-a-grey-100); }
+    .titem.is-active { background: var(--wf-primary-weak-bg); color: var(--wf-text-accent); }
+    .titem.is-add { color: var(--wf-text-sub); }
+
+    /* Share panel (공유 — 프로젝터용 큰 QR 모달) */
+    .dim { position: fixed; inset: 0; background: var(--wf-dimmed); display: none; align-items: center; justify-content: center; padding: var(--wf-space-24); z-index: 50; }
+    .dim.is-open { display: flex; }
+    .share { width: min(520px, 96vw); background: var(--wf-bg-float); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-float); padding: var(--wf-space-32); }
+    .share-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--wf-space-16); margin-bottom: var(--wf-space-16); }
+    .share-head h2 { margin: 0 0 6px; color: var(--wf-text-strong); }
+    .share-head p { margin: 0; font-size: var(--wf-t6-size); color: var(--wf-text-sub); }
+    .close { width: 36px; height: 36px; border-radius: var(--wf-radius-full); border: none; background: var(--wf-a-grey-100); color: var(--wf-text-sub); cursor: pointer; font-size: 16px; flex: none; }
+    .perm-tabs { display: flex; gap: 8px; margin-bottom: var(--wf-space-16); }
+    .perm-desc { font-size: var(--wf-t7-size); color: var(--wf-text-sub); background: var(--wf-a-grey-50); border-radius: 10px; padding: 10px 12px; margin-bottom: var(--wf-space-20); }
+    .qr { width: 220px; height: 220px; margin: 0 auto var(--wf-space-16); border-radius: var(--wf-radius-card); border: 1px solid var(--wf-border-hairline); background:
+      repeating-conic-gradient(var(--wf-a-grey-800) 0% 25%, var(--wf-bg-elevated) 0% 50%) 50% / 22px 22px;
+      display: flex; align-items: center; justify-content: center; }
+    .url-row { display: flex; gap: 8px; margin-bottom: var(--wf-space-12); }
+    .hint { font-size: var(--wf-t7-size); color: var(--wf-text-sub); text-align: center; }
+
+    .frame-note { position: fixed; bottom: 12px; left: 16px; z-index: 40; font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 6px 12px; }
+
+    /* 잠금 상태 — 상단바 🔒 버튼 활성 + 우측 '캔버스 잠김' 텍스트. 잠금 시 소유자·편집자·참여자 모두 작업 불가 → 도구바도 비활성(잠금 해제는 상단바 🔒로). */
+    .editor.is-locked #lockBtn { background: var(--wf-primary); color: var(--wf-text-on-primary); }
+    .lock-text { display: none; font-size: var(--wf-t7-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-accent); white-space: nowrap; }
+    .editor.is-locked .lock-text { display: inline; }
+    .editor.is-locked .toolbar { opacity: .45; pointer-events: none; }
+
+    /* 데모 토글 (와이어프레임 검증용 — 실제 화면엔 없음) */
+    .demo-bar { position: fixed; bottom: 12px; right: 16px; z-index: 60; display: flex; align-items: center; gap: var(--wf-space-8); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: var(--wf-radius-chip); padding: var(--wf-space-8) var(--wf-space-12); box-shadow: var(--wf-shadow-1); }
+    .demo-bar .demo-label { font-size: var(--wf-st13-size); color: var(--wf-text-sub); }
+    .demo-bar .wf-chip { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="editor">
+
+    <!-- Top bar -->
+    <header class="etop">
+      <a class="back" href="t-a-list-v2.html" title="캔버스 목록으로">←</a>
+      <span class="cname" data-editable title="더블클릭하여 캔버스 이름 수정">1모둠</span>
+      <span class="wf-badge c-green">진행 중</span>
+      <span class="spacer"></span>
+      <span class="etop-center">
+      <span class="timer">⏱ 12:30 <button class="tbtn" title="일시정지">⏸</button><button class="tbtn" id="timerBtn" title="시간 설정">▾</button>
+        <div class="timer-menu" id="timerMenu">
+          <div class="tm-head">타이머</div>
+          <div class="tm-display">
+            <span class="tm-time">12:30</span>
+            <button class="tm-stop" title="정지">⏸ 정지</button>
+          </div>
+          <div class="tm-divider"></div>
+          <div class="tm-adjust">
+            <button class="wf-chip">리셋</button>
+            <button class="wf-chip">+5분</button>
+            <button class="wf-chip">+10분</button>
+            <button class="wf-chip">+30분</button>
+            <button class="wf-chip">+60분</button>
+          </div>
+        </div>
+      </span>
+      <button class="icon-btn" id="lockBtn" title="잠금">🔓</button>
+      <span class="lock-text">캔버스 잠김</span>
+      </span>
+      <button class="entry-badge" id="entryBtn" title="입장 대기 10명 — 승인하기">🙋 입장 대기중 10</button>
+      <span class="presence" id="presenceBtn" title="접속자 · 역할 관리">
+        <span class="wf-avatar is-sm">민</span>
+        <span class="wf-avatar is-sm">지</span>
+        <span class="wf-avatar is-sm">+8</span>
+      </span>
+      <span class="settings-wrap">
+        <button class="wf-btn is-weak is-small" id="settingsBtn">설정 ▾</button>
+        <div class="settings-menu" id="settingsMenu">
+          <div class="sm-head">캔버스 설정</div>
+          <div class="sm-row">
+            <div>
+              <div class="sm-label">익명 옵션</div>
+              <div class="sm-desc">참여자끼리는 작성자를 못 봐요.<br>(소유자·편집자는 확인 가능)</div>
+            </div>
+            <label class="switch"><input type="checkbox" /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="sm-row">
+            <div>
+              <div class="sm-label">참여자 커서 숨기기</div>
+              <div class="sm-desc">참여자의 커서가 캔버스에서 안 보여요.</div>
+            </div>
+            <label class="switch"><input type="checkbox" /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="sm-row">
+            <div>
+              <div class="sm-label">입장 자동 승인</div>
+              <div class="sm-desc">새 참여자가 승인 없이 바로 들어와요.</div>
+            </div>
+            <label class="switch"><input type="checkbox" /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="sm-row">
+            <div>
+              <div class="sm-label">닉네임 + 비밀번호 4글자</div>
+              <div class="sm-locked">🔒 끌 수 없는 기본 설정</div>
+            </div>
+            <label class="switch is-locked"><input type="checkbox" checked disabled /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="sm-divider"></div>
+          <button class="wf-btn is-weak is-danger is-small is-block">캔버스 삭제</button>
+        </div>
+      </span>
+      <button class="wf-btn is-small" id="shareBtn">공유</button>
+    </header>
+
+    <!-- Page rail -->
+    <div class="pagebar">
+      <div class="pages">
+        <div class="pchip">1</div>
+        <div class="pchip is-active">2</div>
+        <div class="pchip">3</div>
+        <div class="pchip">4</div>
+        <div class="pchip">5</div>
+      </div>
+      <button class="add-page" data-new-canvas>+ 페이지 추가</button>
+      <span class="spacer"></span>
+      <span class="pagecount">2 / 5 페이지 · 최대 30</span>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap">
+      <div class="canvas">
+        <!-- 선택된 객체: 위에 수정 옵션 바(우측 끝 작성자 프로필) -->
+        <div class="note is-selected" style="left:120px; top:120px;">
+          <nav class="obj-bar">
+            <button class="ob-btn" title="색 바꾸기">●</button>
+            <button class="ob-btn" title="글자">T</button>
+            <button class="ob-btn" title="잠금">🔓</button>
+            <button class="ob-btn" title="삭제">🗑</button>
+            <span class="ob-div"></span>
+            <button class="ob-author" id="objAuthor" title="작성자 보기"><span class="wf-avatar is-sm">환</span><span class="ob-name">환경지킴이</span></button>
+          </nav>
+          <div class="note-text">분리수거함을<br />색깔로 구분</div>
+          <div class="who">환경지킴이</div>
+          <!-- 받은 감정표현: 종류별 칩 + ⊕(좌측, 호버/선택 시) -->
+          <div class="reacts">
+            <button class="react-add" title="감정 추가">⊕</button>
+            <span class="chip">❤️ 3</span><span class="chip">👍 2</span>
+          </div>
+          <!-- 감정 주기 피커: ⊕ 클릭 시. 참가자당 1개 — 내가 준 감정만 선택 표시 -->
+          <div class="react-picker">
+            <button class="rp is-mine" title="내 감정표현">❤️</button>
+            <button class="rp" title="최고">👍</button>
+            <button class="rp" title="놀람">😮</button>
+            <button class="rp" title="웃음">😂</button>
+            <button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+        <div class="note" style="left:360px; top:175px; background:var(--wf-a-teal-100);">
+          <div class="note-text">교문 앞 쓰레기<br />줄이기</div>
+          <div class="who">김민수</div>
+          <div class="reacts">
+            <button class="react-add" title="감정 추가">⊕</button>
+            <span class="chip">❤️ 1</span>
+          </div>
+          <div class="react-picker">
+            <button class="rp" title="좋아요">❤️</button><button class="rp" title="최고">👍</button><button class="rp" title="놀람">😮</button><button class="rp" title="웃음">😂</button><button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+        <!-- 잠긴 객체 + 감정표현 0 → 받은 배지 없고 ⊕만(호버/선택 시) -->
+        <div class="note is-locked" style="left:620px; top:120px; background:var(--wf-a-purple-100);">
+          <span class="lock-badge" title="잠김 — 작성자만 수정">🔒</span>
+          <div class="note-text">급식 잔반<br />캠페인</div>
+          <div class="who">이서연</div>
+          <!-- 반응 0 → 칩 없음, ⊕만 (호버/선택 시) -->
+          <div class="reacts">
+            <button class="react-add" title="감정 추가">⊕</button>
+          </div>
+          <div class="react-picker">
+            <button class="rp" title="좋아요">❤️</button><button class="rp" title="최고">👍</button><button class="rp" title="놀람">😮</button><button class="rp" title="웃음">😂</button><button class="rp" title="박수">👏</button>
+          </div>
+        </div>
+        <div class="cursor" style="left:520px; top:320px;">▷ 하늘</div>
+      </div>
+
+      <div class="pagenav">
+        <button title="이전 페이지">‹</button>
+        <button title="다음 페이지">›</button>
+      </div>
+
+      <!-- 플로팅 도구 팔레트 (예시 — 도구 미확정, 그룹별 구분) -->
+      <nav class="toolbar">
+        <div class="tgroup">
+          <button class="titem is-active" title="선택">↖</button>
+          <button class="titem" title="이동(손)">✥</button>
+        </div>
+        <span class="tdiv"></span>
+        <div class="tgroup">
+          <button class="titem" title="텍스트">T</button>
+          <button class="titem" title="포스트잇">▭</button>
+          <button class="titem" title="펜">✎</button>
+          <button class="titem" title="도형">◇</button>
+        </div>
+        <span class="tdiv"></span>
+        <div class="tgroup">
+          <button class="titem is-add" title="더 많은 도구 (도구 미확정)">+</button>
+        </div>
+        <span class="tdiv"></span>
+        <div class="tgroup">
+          <button class="titem" title="실행취소">↶</button>
+          <button class="titem" title="다시실행">↷</button>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Share panel (공유 버튼으로 열림) -->
+  <div class="dim" id="shareDim">
+    <div class="share">
+      <div class="share-head">
+        <div>
+          <h2 class="wf-st9 wf-bold">캔버스 공유</h2>
+          <p>초대할 권한을 먼저 고르세요. 권한마다 QR·링크가 따로 발급돼요.</p>
+        </div>
+        <button class="close" id="shareClose">✕</button>
+      </div>
+
+      <div class="perm-tabs">
+        <button class="wf-chip is-selected">참여자</button>
+        <button class="wf-chip">편집자</button>
+        <button class="wf-chip">뷰어</button>
+      </div>
+      <div class="perm-desc">참여자: 함께 만들기. 로그인 없이 닉네임 + 4글자 비밀번호로 입장.</div>
+
+      <div class="qr">QR</div>
+      <div class="url-row">
+        <input class="wf-field" value="https://canvas.example/j/3f9k-참여자" readonly />
+        <button class="wf-btn is-weak">링크 복사</button>
+      </div>
+      <p class="hint" id="shareHint">💡 프로젝터로 이 QR을 띄워 학생들이 스캔하게 하세요.</p>
+    </div>
+  </div>
+
+  <!-- 접속자 모달 (presence 클릭으로 열림) -->
+  <div class="dim" id="peopleDim">
+    <div class="people">
+      <div class="share-head">
+        <div>
+          <h2 class="wf-st9 wf-bold">접속자 12명</h2>
+          <p>소유자 1 · 편집자 1 · 참여자 8 · 뷰어 2</p>
+        </div>
+        <button class="close" id="peopleClose">✕</button>
+      </div>
+      <div class="wf-list people-list">
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">나</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">나 (이수안)</div><div class="wf-list-row__desc">sg.been2017@softn.kr</div></div>
+          <select class="wf-field role-select" disabled aria-label="역할"><option>소유자</option></select>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">김</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">김선생</div><div class="wf-list-row__desc">gd.hong@school.kr</div></div>
+          <span class="row-end">
+            <select class="wf-field role-select" aria-label="역할"><option selected>편집자</option><option>참여자</option><option>뷰어</option></select>
+            <button class="wf-btn is-weak is-danger is-small kick-btn">내보내기</button>          </span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">환</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">환경지킴이</div><div class="wf-list-row__desc">mj.kim@school.kr</div></div>
+          <span class="row-end">
+            <select class="wf-field role-select" aria-label="역할"><option>편집자</option><option selected>참여자</option><option>뷰어</option></select>
+            <button class="wf-btn is-weak is-danger is-small kick-btn">내보내기</button>          </span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">민</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">김민수</div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="row-end">
+            <select class="wf-field role-select" aria-label="역할"><option disabled>편집자</option><option selected>참여자</option><option>뷰어</option></select>
+            <button class="wf-btn is-weak is-danger is-small kick-btn">내보내기</button>          </span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">관</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">관찰이</div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="row-end">
+            <select class="wf-field role-select" aria-label="역할"><option disabled>편집자</option><option>참여자</option><option selected>뷰어</option></select>
+            <button class="wf-btn is-weak is-danger is-small kick-btn">내보내기</button>          </span>
+        </div>
+      </div>
+      <p class="people-note">💡 편집자는 <b>로그인 사용자</b>만 가능해요.</p>
+    </div>
+  </div>
+
+  <!-- 내보내기 확인 모달 (접속자 모달의 [내보내기] 클릭으로 열림) -->
+  <div class="dim" id="kickDim">
+    <div class="confirm-card">
+      <h2 class="wf-st9 wf-bold">내보낼까요?</h2>
+      <p><b id="kickName">OO</b>님을 이 캔버스에서 내보냅니다.</p>
+      <div class="confirm-actions">
+        <button class="wf-btn is-weak" id="kickCancel">취소</button>
+        <button class="wf-btn is-danger" id="kickGo">내보내기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 입장 승인 모달 (상단바 '입장 대기 N' 표시 클릭) — 승인 전용 -->
+  <div class="dim" id="approveDim">
+    <div class="people approve-modal">
+      <div class="share-head">
+        <div>
+          <h2 class="wf-st9 wf-bold">입장 대기 10명</h2>
+          <p>승인하면 캔버스에 들어와요.</p>
+        </div>
+        <button class="close" id="approveClose">✕</button>
+      </div>
+      <div class="ap-auto">
+        <span>새 요청 자동 승인</span>
+        <label class="switch"><input type="checkbox" /><span class="track"></span><span class="knob"></span></label>
+      </div>
+      <div class="wf-list pending-list">
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">하</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">하늘 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">이</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">이선생 <span class="wf-badge c-teal is-small">편집자</span></div><div class="wf-list-row__desc">lee.s@school.kr</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">바</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">바다 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">별</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">별이 <span class="wf-badge c-elephant is-small">뷰어</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">구</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">구름 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">나</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">나무 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">햇</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">햇살 <span class="wf-badge c-elephant is-small">뷰어</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">람</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">바람 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">단</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">단비 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+        <div class="wf-list-row">
+          <span class="wf-avatar is-sm">노</span>
+          <div class="wf-list-row__body"><div class="wf-list-row__title">노을 <span class="wf-badge c-green is-small">참여자</span></div><div class="wf-list-row__desc">비로그인</div></div>
+          <span class="pend-actions"><button class="wf-btn is-weak is-small">거절</button><button class="wf-btn is-small">승인</button></span>
+        </div>
+      </div>
+      <button class="wf-btn is-block approve-all">10명 모두 승인</button>
+    </div>
+  </div>
+
+  <!-- 데모 토글 (검증용) — 캔버스 정상/잠금 상태 전환 -->
+  <div class="demo-bar" aria-label="와이어프레임 데모용 — 캔버스 상태">
+    <span class="demo-label">데모:</span>
+    <button class="wf-chip is-selected" data-lock-btn="off">정상</button>
+    <button class="wf-chip" data-lock-btn="on">잠금</button>
+  </div>
+
+  <div class="frame-note">박스 레벨 · IA <b>B</b> (편집자 뷰) · PRD F4·F3·F8 · 공유 버튼=권한별 QR · 잠금(F8)=소유자·편집자·참여자 모두 작업 동결(입장·열람은 됨, 해제는 🔒로) · 데스크톱 1440</div>
+
+  <script src="wf-screen.js?v=5"></script>
+  <script>
+    // 새로 만든 캔버스는 기본 이름 '새 캔버스' (생성 모달 → t-b-edit.html?new=1). 더블클릭으로 이름 수정.
+    if (new URLSearchParams(location.search).get('new')) {
+      document.querySelector('.cname').textContent = '새 캔버스';
+    }
+
+    // 캔버스 잠금 토글 — 데모 칩 / 상단바 🔒 버튼 모두 같은 상태를 토글
+    var editorEl = document.querySelector('.editor');
+    function setLocked(on) {
+      editorEl.classList.toggle('is-locked', on);
+      var lb = document.getElementById('lockBtn');
+      lb.textContent = on ? '🔒' : '🔓';
+      lb.title = on ? '잠금 해제' : '잠금';
+      document.querySelectorAll('[data-lock-btn]').forEach(function (x) {
+        x.classList.toggle('is-selected', x.dataset.lockBtn === (on ? 'on' : 'off'));
+      });
+    }
+    document.querySelectorAll('[data-lock-btn]').forEach(function (b) {
+      b.addEventListener('click', function () { setLocked(b.dataset.lockBtn === 'on'); });
+    });
+    document.getElementById('lockBtn').addEventListener('click', function () {
+      setLocked(!editorEl.classList.contains('is-locked'));
+    });
+
+    document.getElementById('shareBtn').addEventListener('click', function () {
+      document.getElementById('shareDim').classList.add('is-open');
+    });
+    function closeShare() { document.getElementById('shareDim').classList.remove('is-open'); }
+    document.getElementById('shareClose').addEventListener('click', closeShare);
+    document.getElementById('shareDim').addEventListener('click', function (e) {
+      if (e.target === this) closeShare();
+    });
+
+    // 객체 수정 바: 작성자 아바타 클릭 → 풀네임 토글
+    var objAuthor = document.getElementById('objAuthor');
+    if (objAuthor) objAuthor.addEventListener('click', function (e) {
+      e.stopPropagation();
+      objAuthor.classList.toggle('show-name');
+    });
+
+    // 감정 주기 피커 (⊕ 클릭으로 토글, 바깥 클릭 닫기)
+    document.addEventListener('click', function (e) {
+      var add = e.target.closest('.react-add');
+      if (add) {
+        e.stopPropagation();
+        var note = add.closest('.note');
+        var open = note.classList.contains('show-picker');
+        document.querySelectorAll('.note.show-picker').forEach(function (n) { n.classList.remove('show-picker'); });
+        if (!open) note.classList.add('show-picker');
+        return;
+      }
+      if (!e.target.closest('.react-picker')) {
+        document.querySelectorAll('.note.show-picker').forEach(function (n) { n.classList.remove('show-picker'); });
+      }
+    });
+
+    // 접속자 모달 (presence 클릭)
+    var peopleDim = document.getElementById('peopleDim');
+    document.getElementById('presenceBtn').addEventListener('click', function () {
+      peopleDim.classList.add('is-open');
+    });
+    function closePeople() { peopleDim.classList.remove('is-open'); }
+    document.getElementById('peopleClose').addEventListener('click', closePeople);
+    peopleDim.addEventListener('click', function (e) { if (e.target === this) closePeople(); });
+
+    // 내보내기(강제 퇴장) — [내보내기] → 확인 모달. (실제 제거는 구현 영역; 와이어프레임은 흐름만)
+    var kickDim = document.getElementById('kickDim');
+    var kickName = document.getElementById('kickName');
+    document.querySelector('#peopleDim .people-list').addEventListener('click', function (e) {
+      if (!e.target.closest('.kick-btn')) return;
+      var row = e.target.closest('.wf-list-row');
+      var name = row.querySelector('.wf-list-row__title').textContent.trim();
+      kickName.textContent = name;
+      kickDim.classList.add('is-open');
+    });
+    function closeKick() { kickDim.classList.remove('is-open'); }
+    document.getElementById('kickCancel').addEventListener('click', closeKick);
+    document.getElementById('kickGo').addEventListener('click', closeKick);
+    kickDim.addEventListener('click', function (e) { if (e.target === this) closeKick(); });
+
+    // 입장 승인 모달 (상단바 '입장 대기' 표시 클릭)
+    var approveDim = document.getElementById('approveDim');
+    document.getElementById('entryBtn').addEventListener('click', function () {
+      approveDim.classList.add('is-open');
+    });
+    function closeApprove() { approveDim.classList.remove('is-open'); }
+    document.getElementById('approveClose').addEventListener('click', closeApprove);
+    approveDim.addEventListener('click', function (e) { if (e.target === this) closeApprove(); });
+    // 권한 탭 전환
+    var descs = {
+      '참여자': '참여자: 함께 만들기. 로그인 없이 닉네임 + 4글자 비밀번호로 입장.',
+      '편집자': '편집자: 페이지·템플릿까지 편집. 입장하려면 로그인이 필요해요.',
+      '뷰어': '뷰어: 보기 전용. 로그인 없이 닉네임 + 4글자 비밀번호로 입장.'
+    };
+    var shareHint = document.getElementById('shareHint');
+    var defaultHint = shareHint.textContent;
+    document.querySelectorAll('.perm-tabs .wf-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.perm-tabs .wf-chip').forEach(function (c) { c.classList.remove('is-selected'); });
+        chip.classList.add('is-selected');
+        document.querySelector('.perm-desc').textContent = descs[chip.textContent] || '';
+        var isEditor = chip.textContent === '편집자';
+        shareHint.textContent = isEditor ? '⏱ 이 편집자 초대 링크는 10분 후 만료돼요. 편집자는 로그인해야 입장합니다.' : defaultHint;
+      });
+    });
+
+    // 설정 드롭다운 ([설정] ▾)
+    var settingsBtn = document.getElementById('settingsBtn');
+    var settingsMenu = document.getElementById('settingsMenu');
+    settingsBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      settingsMenu.classList.toggle('is-open');
+    });
+    document.addEventListener('click', function (e) {
+      if (e.target !== settingsBtn && !settingsMenu.contains(e.target)) settingsMenu.classList.remove('is-open');
+    });
+
+    // 타이머 시간 설정 드롭다운 (▾)
+    var timerBtn = document.getElementById('timerBtn');
+    var timerMenu = document.getElementById('timerMenu');
+    timerBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      timerMenu.classList.toggle('is-open');
+    });
+    document.addEventListener('click', function (e) {
+      if (e.target !== timerBtn && !timerMenu.contains(e.target)) timerMenu.classList.remove('is-open');
+    });
+  </script>
+</body>
+</html>

@@ -1,45 +1,33 @@
-# 이 저장소는 docs/quizn-board-v2 산출물만 공개한다.
-# 전략: 전부 무시한 뒤, docs/quizn-board-v2 만 되살린다.
-# (gitignore의 re-include는 부모 디렉토리가 무시되면 동작하지 않으므로,
-#  경로를 한 단계씩 되살린 뒤 그 안을 다시 무시하는 순서로 작성한다.)
+# 전략: 루트의 모든 것을 무시한 뒤, 추적 대상만 되살린다.
+# 추적 = .claude(설정·에이전트·스킬·메모리) · canvas(활성 프로젝트) · template(틀) · CLAUDE.md
+# 제외 = 그 외 전부 (softn-id · references · quizn-board(구 wall형) 등)
 
-# 1) 루트의 모든 것을 무시
+# 1) 루트 전부 무시
 /*
 
-# 2) .gitignore 자체는 추적 (저장소가 자기 규칙을 갖도록)
+# 2) 추적 대상만 되살림
 !/.gitignore
-
-# 2-0) 프로젝트 설명서(CLAUDE.md)도 추적
 !/CLAUDE.md
-
-# 2-a) .claude (에이전트·스킬·공유 설정) 추적
 !/.claude/
-#      단, 로컬 개인 설정(권한 허용목록 등 기기별)은 제외
+!/canvas/
+!/template/
+
+# 2b) canvas 안에서는 핸드오프 산출물만 추적 = prd · workflow · wireframe
+#     (그 외 ia · one-pager · ux · reference 등은 제외)
+/canvas/*
+!/canvas/prd/
+!/canvas/workflow/
+!/canvas/wireframe/
+# prd 안의 레거시 버전 더미는 제외 (prd-v1.0만 추적)
+/canvas/prd/legacy/
+
+# 3) 기기별 로컬 설정은 제외
 /.claude/settings.local.json
 
-# 3) git이 docs 안으로 내려갈 수 있게 docs 디렉토리만 되살림
-!/docs/
-
-# 4) docs 안의 모든 것을 무시
-/docs/*
-
-# 5) 그 중 quizn-board-v2 만 되살림
-!/docs/quizn-board-v2/
-
-# ── prd/ia는 '마지막 버전'만 추적 (중간 드래프트는 무시) ──
-#    (docs/quizn-board-v2 가 위에서 되살아난 뒤, 그 안의 중간본만 다시 무시)
-/docs/quizn-board-v2/prd/prd-v10.md
-/docs/quizn-board-v2/prd/prd-v11.md
-/docs/quizn-board-v2/ia/ia-v9.md
-
-# ── 와이어프레임 작업 부산물 (폰트 바이너리·stray .claude) 무시 ──
-PretendardVariable.woff2
-/docs/quizn-board-v2/ux/wireframe/.claude/
-
-# ── 비밀값(.env)은 위치 불문 항상 무시 (이미 /* 로 무시되지만 명시) ──
-.env
-.env.*
-
-# ── OS·도구 부산물은 위치 불문 항상 무시 ──
+# 4) OS·비밀·바이너리 부산물은 위치 불문 항상 무시
 .DS_Store
 Thumbs.db
+.env
+.env.*
+*.woff2
+*.zip

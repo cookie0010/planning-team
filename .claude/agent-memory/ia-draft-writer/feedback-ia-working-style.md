@@ -27,4 +27,4 @@ AskUserQuestion에 3문항(진입점·첫동선·템플릿)을 한 번에 던졌
 경쟁 도구의 UI·화면 구조는 텍스트/웹검색으로 거의 안 잡힘. 사용자가 직접 찍어 `reference/`에 넣어준 캡처가 진짜 입력이었음.
 **How to apply:** UI 구조 벤치마크가 필요하면 deep-research 돌리기 전에 사용자에게 필요한 화면 캡처를 콕 집어 요청. deep-research 범위도 착수 전 좁게 확정(이번에 대상이 두 번 잘림: Padlet 제외, 4종으로). 텍스트로 알 수 있는 건 동선 단계 수·옵션 이름 정도(공식 도움말 문서).
 
-관련: [[project-quizn-board-v2]]
+관련: [[project-canvas]]

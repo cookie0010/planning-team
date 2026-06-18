@@ -26,4 +26,4 @@ metadata:
 - 생성 후 반환 URL은 **항상 마크다운 링크로** 사용자에게 보여줄 것.
 - 도구가 개별 도형 이동·폰트 변경은 못 함 → 그런 요청은 "FigJam에서 직접 편집" 안내, 내용 변경은 재생성.
 
-관련: [[project-quizn-board-v2]]
+관련: [[project-canvas]]

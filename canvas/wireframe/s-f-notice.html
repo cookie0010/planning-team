@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F-안내 · 입장이 막혔을 때 (태블릿) — canvas 와이어프레임</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    .notice-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--wf-space-24); }
+    .notice-card { width: min(440px, 100%); background: var(--wf-bg-elevated); border-radius: var(--wf-radius-card-lg); box-shadow: var(--wf-shadow-2); padding: var(--wf-space-48) var(--wf-space-32) var(--wf-space-32); text-align: center; }
+
+    /* 상황 아이콘 (모노크롬 원형 배경 + 이모지) */
+    .notice-icon { width: 72px; height: 72px; margin: 0 auto var(--wf-space-24); border-radius: var(--wf-radius-full); background: var(--wf-a-grey-100); display: flex; align-items: center; justify-content: center; font-size: 34px; }
+
+    .notice-title { font-size: var(--wf-st9-size); font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); margin-bottom: var(--wf-space-12); }
+    .notice-desc { font-size: var(--wf-t6-size); color: var(--wf-text-sub); line-height: 1.6; margin-bottom: var(--wf-space-24); }
+
+    /* 캔버스 요약(어느 캔버스에서 막혔는지) */
+    .ctx-box { display: flex; align-items: center; gap: var(--wf-space-12); text-align: left; background: var(--wf-a-grey-50); border-radius: var(--wf-radius-card); padding: var(--wf-space-16); margin-bottom: var(--wf-space-24); }
+    .ctx-box .cb-body { flex: 1; min-width: 0; }
+    .ctx-box .cb-name { font-size: var(--wf-t6-size); font-weight: var(--wf-weight-bold); color: var(--wf-text-strong); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ctx-box .cb-meta { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin-top: var(--wf-space-4); }
+    .ctx-box .role-badge { flex: none; align-self: flex-start; font-size: var(--wf-t7-size); padding: var(--wf-space-8) var(--wf-space-16); border-radius: var(--wf-radius-chip); }
+
+    .notice-actions { display: flex; flex-direction: column; gap: var(--wf-space-12); }
+    .notice-hint { font-size: var(--wf-t7-size); color: var(--wf-text-sub); margin-top: var(--wf-space-20); line-height: 1.6; }
+
+    /* 변형별로 보이고 숨김 — 데모 칩이 .notice-card[data-case]를 바꾼다 */
+    [data-show] { display: none; }
+    .notice-card[data-case="over"]     [data-show~="over"],
+    .notice-card[data-case="rejected"] [data-show~="rejected"] { display: inline; }
+    /* 블록 성격 요소는 inline 대신 본래 표시값으로 */
+    .notice-card[data-case="over"]     .notice-actions[data-show~="over"],
+    .notice-card[data-case="rejected"] .notice-actions[data-show~="rejected"] { display: flex; }
+    /* hint는 block이어야 margin-top(버튼과의 간격)이 먹는다 */
+    .notice-card[data-case="over"]     .notice-hint[data-show~="over"],
+    .notice-card[data-case="rejected"] .notice-hint[data-show~="rejected"] { display: block; }
+
+    /* 데모 토글 칩 (와이어프레임 검증용 — 실제 화면에는 없음) */
+    .demo-bar { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: var(--wf-space-8); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: var(--wf-radius-chip); padding: var(--wf-space-8) var(--wf-space-12); box-shadow: var(--wf-shadow-1); z-index: 10; }
+    .demo-bar .demo-label { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-right: var(--wf-space-4); }
+    .demo-bar .wf-chip { cursor: pointer; }
+    .demo-bar .demo-div { width: 1px; height: 18px; background: var(--wf-border); margin: 0 var(--wf-space-4); }
+
+    /* '돌아가기'는 로그인 사용자에게만 — 비로그인은 갈 홈이 없어 숨김 */
+    .notice-card[data-auth="guest"] .back-btn { display: none; }
+
+    .frame-note { position: fixed; top: 12px; right: 12px; font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 6px 10px; max-width: 250px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <!-- 데모 토글 (검증용) — 한 파일에서 변형 4종 전환 -->
+  <div class="demo-bar" aria-label="와이어프레임 데모용 변형 전환">
+    <span class="demo-label">데모:</span>
+    <span class="wf-chip is-selected" data-case-btn="over">정원 초과</span>
+    <span class="wf-chip" data-case-btn="rejected">입장 거절</span>
+    <span class="demo-div"></span>
+    <span class="demo-label">사용자:</span>
+    <span class="wf-chip is-selected" data-auth-btn="member">로그인</span>
+    <span class="wf-chip" data-auth-btn="guest">비로그인</span>
+  </div>
+
+  <div class="notice-screen">
+    <div class="notice-card" id="card" data-case="over" data-auth="member">
+
+      <!-- 아이콘 -->
+      <div class="notice-icon" aria-hidden="true">
+        <span data-show="over">👥</span>
+        <span data-show="rejected">🚫</span>
+      </div>
+
+      <!-- 제목 -->
+      <h1 class="notice-title">
+        <span data-show="over">지금은 자리가 꽉 찼어요</span>
+        <span data-show="rejected">입장이 승인되지 않았어요</span>
+      </h1>
+
+      <!-- 설명 -->
+      <p class="notice-desc">
+        <span data-show="over">지금은 정원이 모두 차 있어요. 잠시 뒤 다시 시도해 주세요.</span>
+        <span data-show="rejected">관리자가 입장 요청을 받지 않았어요.<br>잘못 들어왔다면 캔버스를 확인하고 다시 요청해 주세요.</span>
+      </p>
+
+      <!-- 어느 캔버스에서 막혔는지 -->
+      <div class="ctx-box">
+        <span class="wf-avatar" aria-hidden="true">📋</span>
+        <div class="cb-body">
+          <div class="cb-name">3학년 2반 환경 프로젝트 — 우리 학교 쓰레기 줄이기 대작전</div>
+          <div class="cb-meta">
+            <span data-show="over">참여 20/20 · 정원 마감</span>
+            <span data-show="rejected">요청한 이름 · 나무</span>
+          </div>
+        </div>
+        <span class="wf-badge c-green role-badge" data-show="over rejected">참여자</span>
+      </div>
+
+      <!-- 행동 버튼 (변형별) -->
+      <div class="notice-actions" data-show="over">
+        <button class="wf-btn">다시 시도</button>
+        <button class="wf-btn is-weak back-btn">돌아가기</button>
+      </div>
+      <div class="notice-actions" data-show="rejected">
+        <button class="wf-btn">다시 요청하기</button>
+        <button class="wf-btn is-weak back-btn">돌아가기</button>
+      </div>
+
+      <!-- 부가 안내 (변형별) -->
+      <p class="notice-hint" data-show="over">💡 누군가 나가면 자리가 생겨요. '다시 시도'를 눌러 다시 들어와 보세요.</p>
+    </div>
+  </div>
+
+  <div class="frame-note">박스 레벨 · IA <b>F-안내</b> · PRD F5<br>입장이 막혔을 때의 단일 메시지 카드. 변형 2종: <b>정원 초과</b>(20명 마감) · <b>입장 거절</b>(D-승인 대기에서 관리자 거절). ※ <b>잠금</b>은 입장을 막지 않음(작업 동결) · <b>보관 개념은 PoC에서 제외</b> → 둘 다 안내 화면 없음. <b>돌아가기</b>는 로그인 사용자에게만. 상단 칩은 데모용(실제 화면엔 없음).</div>
+
+  <script>
+    document.querySelectorAll('[data-case-btn]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('[data-case-btn]').forEach(function (c) { c.classList.remove('is-selected'); });
+        chip.classList.add('is-selected');
+        document.getElementById('card').setAttribute('data-case', chip.getAttribute('data-case-btn'));
+      });
+    });
+    // 로그인/비로그인 토글 — 비로그인이면 '돌아가기' 숨김
+    document.querySelectorAll('[data-auth-btn]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('[data-auth-btn]').forEach(function (c) { c.classList.remove('is-selected'); });
+        chip.classList.add('is-selected');
+        document.getElementById('card').setAttribute('data-auth', chip.getAttribute('data-auth-btn'));
+      });
+    });
+  </script>
+</body>
+</html>

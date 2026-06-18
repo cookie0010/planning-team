@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>canvas — 와이어프레임 보드 (HTML)</title>
+  <link rel="stylesheet" href="wf.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { font-family: var(--wf-font-family); background: var(--wf-bg-base); color: var(--wf-text-default); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    .board-top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--wf-space-16); height: 60px; padding: 0 var(--wf-space-32); background: color-mix(in srgb, var(--wf-bg-elevated) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--wf-border-hairline); }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); font-size: var(--wf-st9-size); }
+    .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: var(--wf-primary); }
+    .board-top .spacer { flex: 1; }
+    .board-top .sub { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+    .icon-btn { width: 38px; height: 38px; border-radius: var(--wf-radius-full); border: none; cursor: pointer; background: var(--wf-a-grey-100); color: var(--wf-text-sub); font-size: 15px; }
+
+    .wrap { max-width: 1600px; margin: 0 auto; padding: var(--wf-space-40) var(--wf-space-32) var(--wf-space-96); }
+    .intro { max-width: 760px; margin-bottom: var(--wf-space-40); }
+    .intro h1 { color: var(--wf-text-strong); margin: 0 0 var(--wf-space-12); }
+    .intro p { font-size: var(--wf-st10-size); color: var(--wf-text-default); margin: 0 0 8px; }
+    .intro .meta { font-size: var(--wf-t7-size); color: var(--wf-text-sub); }
+
+    .area { margin-top: var(--wf-space-64); }
+    .area-head { display: flex; align-items: center; gap: 12px; margin-bottom: var(--wf-space-24); padding-bottom: var(--wf-space-12); border-bottom: 1px solid var(--wf-border-hairline); }
+    .area-head h2 { margin: 0; color: var(--wf-text-strong); font-size: var(--wf-st4-size); }
+    .area-head .dim { font-size: var(--wf-t6-size); color: var(--wf-text-sub); }
+
+    .frames { display: flex; flex-wrap: wrap; gap: var(--wf-space-32); align-items: flex-start; }
+
+    .frame { display: flex; flex-direction: column; gap: 10px; }
+    .frame .cap { display: flex; align-items: baseline; gap: 8px; }
+    .frame .code { font-weight: var(--wf-weight-extrabold); color: var(--wf-text-strong); font-size: var(--wf-t5-size); }
+    .frame .title { font-size: var(--wf-t6-size); color: var(--wf-text-default); }
+    .frame .prd { font-size: var(--wf-st13-size); color: var(--wf-text-sub); }
+
+    /* device frames — iframe scaled into a fixed thumbnail box */
+    .device { border: 1px solid var(--wf-border-strong); border-radius: 14px; overflow: hidden; background: var(--wf-bg-elevated); box-shadow: var(--wf-shadow-3); position: relative; }
+    .device iframe { border: none; display: block; }
+    /* desktop 1440 -> scale 0.42 => 605 x 392 (we cap height) */
+    .device.desktop { width: 605px; height: 392px; }
+    .device.desktop iframe { width: 1440px; height: 933px; transform: scale(.42); transform-origin: top left; }
+    /* tablet 1024 x 768 -> scale .42 => 430 x 322 */
+    .device.tablet { width: 430px; height: 322px; }
+    .device.tablet iframe { width: 1024px; height: 768px; transform: scale(.42); transform-origin: top left; }
+    /* phone 390 x 760 -> scale .5 => 195 x 380 */
+    .device.phone { width: 195px; height: 380px; }
+    .device.phone iframe { width: 390px; height: 760px; transform: scale(.5); transform-origin: top left; }
+
+    .device .open { position: absolute; top: 8px; right: 8px; z-index: 2; font-size: var(--wf-st13-size); padding: 5px 10px; }
+
+    /* upcoming placeholder */
+    .device.todo { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, var(--wf-a-grey-100), var(--wf-a-grey-100) 12px, var(--wf-a-grey-50) 12px, var(--wf-a-grey-50) 24px); color: var(--wf-text-sub); font-size: var(--wf-t6-size); border-style: dashed; }
+    .frame.is-todo .code, .frame.is-todo .title { color: var(--wf-text-sub); }
+  </style>
+</head>
+<body>
+  <header class="board-top">
+    <div class="brand"><span class="mark"></span> canvas · 와이어프레임</div>
+    <span class="spacer"></span>
+    <span class="sub">박스 레벨 v1 (HTML) · 축소 표시 — 프레임의 [열기]로 실제 크기 확인</span>
+    <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
+  </header>
+
+  <div class="wrap">
+    <div class="intro">
+      <h1 class="wf-st2 wf-bold">canvas 와이어프레임</h1>
+      <p>ia-v11 화면 목록을 HTML 박스 레벨로 옮긴 보드입니다. 색·아이콘 스타일은 넣지 않고 구조·위계·문구 검증에 집중합니다.</p>
+      <p class="meta">기준: <b>prd-v13.md</b> · <b>ia-v11.md</b> · 스타일: <b>wf.css</b></p>
+      <p class="meta">두 area로 나뉩니다 — 교사(데스크톱 1440) / 학생(태블릿 1024·폰 390). 접점은 캔버스.</p>
+    </div>
+
+    <!-- 교사 area -->
+    <section class="area">
+      <div class="area-head">
+        <h2>교사 area</h2>
+        <span class="dim">데스크톱 1440 · 소유자·편집자</span>
+      </div>
+      <div class="frames">
+        <div class="frame">
+          <div class="cap"><span class="code">A</span><span class="title">캔버스 목록 (지휘석) v2</span></div>
+          <div class="prd">F1·F2·F7·F11 — 캔버스=주연 / 그룹=폴더</div>
+          <div class="device desktop"><a class="wf-btn is-small open" href="t-a-list-v2.html" target="_blank">열기 ↗</a><iframe src="t-a-list-v2.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">A·그룹</span><span class="title">그룹 내부 (드릴인) v2</span></div>
+          <div class="prd">F11·F7 — 폴더 클릭 → 캔버스</div>
+          <div class="device desktop"><a class="wf-btn is-small open" href="t-a-group-v2.html" target="_blank">열기 ↗</a><iframe src="t-a-group-v2.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">A·빈</span><span class="title">캔버스 목록 — 빈 상태</span></div>
+          <div class="prd">첫 진입 — 단일 CTA</div>
+          <div class="device desktop"><a class="wf-btn is-small open" href="t-a-empty.html" target="_blank">열기 ↗</a><iframe src="t-a-empty.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">B</span><span class="title">캔버스 편집 (편집자 뷰)</span></div>
+          <div class="prd">F4·F3·F8 — 페이지·타이머·잠금·공유</div>
+          <div class="device desktop"><a class="wf-btn is-small open" href="t-b-edit.html" target="_blank">열기 ↗</a><iframe src="t-b-edit.html" scrolling="no"></iframe></div>
+        </div>
+      </div>
+      <p class="meta" style="margin-top:var(--wf-space-16)">※ <b>설정</b>은 독립 화면이 아니라 B 상단바 <b>[설정] 드롭다운</b>(익명·커서숨기기·자동승인·삭제). 공유 패널은 권한별 QR(참여자/편집자/뷰어)만 — <b>편집자 임명은 B 우측 상단 접속자(presence) 클릭 → 접속자 모달의 역할 셀렉트</b>에서. <b>입장 승인</b>은 상단바 '입장 대기 N' → 별도 모달.</p>
+    </section>
+
+    <!-- 학생 area -->
+    <section class="area">
+      <div class="area-head">
+        <h2>학생 area</h2>
+        <span class="dim">태블릿 1024 · 폰 390 · 참여자·뷰어</span>
+      </div>
+      <div class="frames">
+        <div class="frame">
+          <div class="cap"><span class="code">E-참여자</span><span class="title">함께 만들기 (태블릿)</span></div>
+          <div class="prd">F4·F10·F12 — 본인 객체만·다종 감정(1인 1감정)·잠긴 객체·접속자 보기</div>
+          <div class="device tablet"><a class="wf-btn is-small open" href="s-e-participant.html" target="_blank">열기 ↗</a><iframe src="s-e-participant.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">D</span><span class="title">입장 (태블릿)</span></div>
+          <div class="prd">F5 — 권한 분기(편집자=로그인 / 참여자·뷰어=닉네임+비번4), 닉네임 ≤15자·중복 차단</div>
+          <div class="device tablet"><a class="wf-btn is-small open" href="s-d-entry.html" target="_blank">열기 ↗</a><iframe src="s-d-entry.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">D·승인대기</span><span class="title">승인 대기 (태블릿)</span></div>
+          <div class="prd">F5 — 교사 수동 승인 대기 (자동 승인이면 건너뜀)</div>
+          <div class="device tablet"><a class="wf-btn is-small open" href="s-d-waiting.html" target="_blank">열기 ↗</a><iframe src="s-d-waiting.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">E-뷰어</span><span class="title">보기 전용 (태블릿)</span></div>
+          <div class="prd">F4 — 도구바 없음·감정 불가·보기만(작성자·감정칩·잠금 배지는 노출)</div>
+          <div class="device tablet"><a class="wf-btn is-small open" href="s-e-viewer.html" target="_blank">열기 ↗</a><iframe src="s-e-viewer.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame">
+          <div class="cap"><span class="code">F</span><span class="title">안내 (태블릿)</span></div>
+          <div class="prd">F5 — 정원초과·입장 거절 (단일 메시지 카드·데모 칩으로 2종 전환). 잠금·보관은 입장 안내 대상 아님</div>
+          <div class="device tablet"><a class="wf-btn is-small open" href="s-f-notice.html" target="_blank">열기 ↗</a><iframe src="s-f-notice.html" scrolling="no"></iframe></div>
+        </div>
+        <div class="frame is-todo">
+          <div class="cap"><span class="code">G</span><span class="title">내 활동 (재진입)</span></div>
+          <div class="prd">F5 — 참여자/뷰어 구분 · ⚠️ OQ-12(계정 체계) 보류 → 후순위</div>
+          <div class="device tablet todo">후순위</div>
+        </div>
+        <div class="frame is-todo">
+          <div class="cap"><span class="code">D·폰</span><span class="title">입장 (폰 390)</span></div>
+          <div class="prd">F5 — 후순위</div>
+          <div class="device phone todo">후순위</div>
+        </div>
+        <div class="frame is-todo">
+          <div class="cap"><span class="code">E·폰</span><span class="title">함께 만들기 (폰 390)</span></div>
+          <div class="prd">F4·F10 — 후순위</div>
+          <div class="device phone todo">후순위</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const r = document.documentElement;
+      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+  </script>
+</body>
+</html>

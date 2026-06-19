@@ -18,6 +18,8 @@
     .thumb .status-wrap .status-badge { position: static; }
     .thumb .lock-note { font-size: var(--wf-st13-size); color: var(--wf-text-sub); background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline); border-radius: var(--wf-radius-chip); padding: 3px 8px; }
   </style>
+  <link rel="stylesheet" href="thumbnails.css" />
+  <link rel="stylesheet" href="custom.css" />
 </head>
 <body>
 
@@ -61,10 +63,9 @@
 
       <!-- 단독 캔버스 (주연) -->
       <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="false">
-        <div class="thumb">
+        <div class="thumb mode-brainstorm">
           <span class="wf-badge c-green status-badge">진행 중</span>
           <span class="presence"><span class="wf-avatar is-sm">A</span><span class="wf-avatar is-sm">B</span><span class="wf-avatar is-sm">+9</span></span>
-          라이브 미리보기
         </div>
         <div class="body">
           <div class="title">
@@ -83,10 +84,9 @@
       </div>
 
       <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="false">
-        <div class="thumb">
+        <div class="thumb mode-blank">
           <span class="wf-badge c-green status-badge">진행 중</span>
           <span class="presence"><span class="wf-avatar is-sm">C</span><span class="wf-avatar is-sm">+3</span></span>
-          라이브 미리보기
         </div>
         <div class="body">
           <div class="title">
@@ -108,8 +108,8 @@
       <div class="wf-card folder is-interactive" title="그룹 안으로 들어가기" onclick="location.href='t-a-group-v2.html'" data-kind="folder">
         <div class="fthumb">
           <div class="tiles">
-            <div class="tile"></div><div class="tile"></div>
-            <div class="tile"></div><div class="tile empty"></div>
+            <div class="tile mode-brainstorm"></div><div class="tile mode-mindmap"></div>
+            <div class="tile mode-blank"></div><div class="tile empty"></div>
           </div>
         </div>
         <div class="body">
@@ -120,10 +120,9 @@
 
       <!-- 단독 캔버스 (3) — 잠금(작업 동결, 입장은 허용). 상태는 active 그룹으로 묶지 않고 카드 배지로만 표시 -->
       <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="false">
-        <div class="thumb">
+        <div class="thumb mode-mindmap">
           <span class="status-wrap"><span class="wf-badge c-elephant status-badge">🔒 잠금</span><span class="lock-note">작업이 불가능해요</span></span>
           <span class="presence"><span class="wf-avatar is-sm">E</span><span class="wf-avatar is-sm">+5</span></span>
-          라이브 미리보기
         </div>
         <div class="body">
           <div class="title">
@@ -143,10 +142,9 @@
 
       <!-- 공유된 캔버스 — 내가 '편집자'로 들어가 있는(소유자 아님) 캔버스 -->
       <div class="wf-card ccard is-interactive" data-href="t-b-edit.html" data-kind="canvas" data-status="active" data-shared="true">
-        <div class="thumb">
-          <span class="wf-badge c-teal status-badge">🤝 공유</span>
+        <div class="thumb mode-brainstorm">
+          <span class="wf-badge c-share status-badge">🤝 공유</span>
           <span class="presence"><span class="wf-avatar is-sm">옆</span><span class="wf-avatar is-sm">+7</span></span>
-          라이브 미리보기
         </div>
         <div class="body">
           <div class="title">
@@ -167,8 +165,8 @@
       <div class="wf-card folder is-interactive" title="그룹 안으로 들어가기" onclick="location.href='t-a-group-v2.html'" data-kind="folder">
         <div class="fthumb">
           <div class="tiles">
-            <div class="tile"></div><div class="tile"></div>
-            <div class="tile"></div><div class="tile"></div>
+            <div class="tile mode-brainstorm"></div><div class="tile mode-blank"></div>
+            <div class="tile mode-mindmap"></div><div class="tile mode-brainstorm"></div>
           </div>
         </div>
         <div class="body">

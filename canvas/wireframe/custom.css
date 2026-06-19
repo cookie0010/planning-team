@@ -1,0 +1,79 @@
+/* 요소 색상 커스텀 — base: wf.css (= indigo_tinted) */
+
+/* ── 목록 캔버스 요소 색상 제거 ── (인디고 틴트 해제, 카드·빗금은 중립 복귀) */
+
+/* 캔버스 썸네일은 공통 컴포넌트로 분리 → thumbnails.css 참고 */
+
+/* ── 공유 배지 — '진행 중'(green)과 겹치지 않게 보라 톤으로 분리 ── */
+.wf-badge.c-share { color: #7c4dd0; background: rgba(124,77,208,0.16); }
+
+/* ── toolbar 필터 칩 — 회색 채움 대신 고스트(테두리)로 톤 정리 ── */
+.toolbar .wf-chip {
+  background: transparent !important;
+  border: 1px solid var(--wf-border-hairline) !important;
+  color: var(--wf-text-sub) !important;
+}
+.toolbar .wf-chip:hover { background: var(--wf-a-grey-50) !important; }
+.toolbar .wf-chip.is-selected {
+  background: var(--tPrimaryWeakButtonBackground) !important;
+  border-color: transparent !important;
+  color: var(--wf-text-accent) !important;
+}
+
+/* ============================================================================
+ * 색상 테마(팔레트) — design-prototype 6종을 토큰 오버라이드로 정리
+ * 각 테마는 강조색 램프(--wf-slate-*) + 배경 틴트(--wf-a-grey-background)만 다름.
+ * 나머지 토큰(--tPrimary*, --wf-text-accent 등)은 이 램프를 참조하므로 함께 바뀐다.
+ * #themeBtn → 하단 색상 피커에서 선택 (wf-screen.js). 기본값 = 인디고(=base).
+ * ========================================================================== */
+html[data-palette="indigo"] {
+  --wf-slate-50:#eef0ff; --wf-slate-100:#dfe2ff; --wf-slate-200:#c2c7fb; --wf-slate-300:#a3aaf7; --wf-slate-400:#828bf0; --wf-slate-500:#6068e8; --wf-slate-600:#4a4fd6; --wf-slate-700:#3b3eb3; --wf-slate-800:#2f3190; --wf-slate-900:#232470;
+  --wf-a-grey-background:#f5f6fe;
+}
+html[data-palette="violet"] {
+  --wf-slate-50:#f5edff; --wf-slate-100:#e9dbff; --wf-slate-200:#d3b9fc; --wf-slate-300:#bd96f7; --wf-slate-400:#a571ef; --wf-slate-500:#8b4fe0; --wf-slate-600:#7536c9; --wf-slate-700:#5f2aa6; --wf-slate-800:#4c2186; --wf-slate-900:#3a1968;
+  --wf-a-grey-background:#f8f4fd;
+}
+html[data-palette="teal"] {
+  --wf-slate-50:#e6f7f6; --wf-slate-100:#c7eeec; --wf-slate-200:#97e0dc; --wf-slate-300:#63cfca; --wf-slate-400:#34bbb5; --wf-slate-500:#16a39c; --wf-slate-600:#0c857f; --wf-slate-700:#076b66; --wf-slate-800:#06544f; --wf-slate-900:#06403c;
+  --wf-a-grey-background:#f1f9f9;
+}
+html[data-palette="emerald"] {
+  --wf-slate-50:#e9f8ef; --wf-slate-100:#cdeeda; --wf-slate-200:#9fdcb8; --wf-slate-300:#6dc892; --wf-slate-400:#3eb56f; --wf-slate-500:#1f9d56; --wf-slate-600:#138046; --wf-slate-700:#0e6638; --wf-slate-800:#0b502c; --wf-slate-900:#083d22;
+  --wf-a-grey-background:#f2f9f5;
+}
+html[data-palette="amber"] {
+  --wf-slate-50:#fff5e0; --wf-slate-100:#ffe9b8; --wf-slate-200:#ffd680; --wf-slate-300:#ffbf47; --wf-slate-400:#fba70f; --wf-slate-500:#ec8c00; --wf-slate-600:#c87000; --wf-slate-700:#a25700; --wf-slate-800:#80450a; --wf-slate-900:#63360b;
+  --wf-a-grey-background:#fef8f0;
+}
+html[data-palette="amber-warm"] {
+  --wf-slate-50:#fff5e0; --wf-slate-100:#ffe9b8; --wf-slate-200:#ffd680; --wf-slate-300:#ffbf47; --wf-slate-400:#fba70f; --wf-slate-500:#ec8c00; --wf-slate-600:#c87000; --wf-slate-700:#a25700; --wf-slate-800:#80450a; --wf-slate-900:#63360b;
+  --wf-a-grey-background:#f5f3ef;
+}
+
+/* ── 색상 피커 — #themeBtn 바로 아래로 플로팅 (위치는 wf-screen.js가 지정) ── */
+.theme-picker {
+  position: fixed; top: 0; left: 0; transform: translateY(-6px);
+  display: flex; align-items: center; gap: var(--wf-space-8, 8px);
+  padding: 10px 14px;
+  background: var(--wf-bg-elevated); border: 1px solid var(--wf-border-hairline);
+  border-radius: var(--wf-radius-card, 16px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  z-index: 60;
+}
+.theme-picker.is-open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
+.theme-picker .tp-label { font-size: var(--wf-st13-size); color: var(--wf-text-sub); margin-right: 4px; white-space: nowrap; }
+.theme-swatch {
+  position: relative; width: 30px; height: 30px; padding: 0;
+  border: 2px solid transparent; border-radius: 50%; cursor: pointer;
+  background: var(--sw, #ccc); background-clip: padding-box;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.theme-swatch:hover { transform: scale(1.12); }
+.theme-swatch.is-selected { border-color: var(--wf-text-default); box-shadow: 0 0 0 2px var(--wf-bg-elevated) inset; }
+.theme-swatch.is-selected::after {
+  content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 14px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}

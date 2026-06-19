@@ -76,6 +76,7 @@
     .frame-note { max-width: 1320px; margin: 0 auto; padding: 0 var(--wf-space-40) var(--wf-space-40); }
     .frame-note .tag { font-size: var(--wf-st13-size); color: var(--wf-text-sub); border: 1px dashed var(--wf-border-strong); border-radius: 8px; padding: 10px 14px; }
   </style>
+  <link rel="stylesheet" href="custom.css" />
 </head>
 <body>
 
@@ -85,7 +86,6 @@
     <span class="crumb">프로젝트 / <b>2026 1학기 환경수업</b></span>
     <span class="spacer"></span>
     <input class="wf-field search" placeholder="캔버스 검색" />
-    <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
     <span class="wf-avatar is-sm">교사</span>
   </header>
 
@@ -218,11 +218,5 @@
     <div class="tag">박스 레벨 와이어프레임 · IA 코드 <b>A</b> (지휘석) · PRD F1·F2·F7·F11 · 데스크톱 1440 기준</div>
   </div>
 
-  <script>
-    document.getElementById('themeBtn').addEventListener('click', () => {
-      const r = document.documentElement;
-      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
-    });
-  </script>
 </body>
 </html>

@@ -56,13 +56,13 @@
     .device.todo { display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, var(--wf-a-grey-100), var(--wf-a-grey-100) 12px, var(--wf-a-grey-50) 12px, var(--wf-a-grey-50) 24px); color: var(--wf-text-sub); font-size: var(--wf-t6-size); border-style: dashed; }
     .frame.is-todo .code, .frame.is-todo .title { color: var(--wf-text-sub); }
   </style>
+  <link rel="stylesheet" href="custom.css" />
 </head>
 <body>
   <header class="board-top">
     <div class="brand"><span class="mark"></span> canvas · 와이어프레임</div>
     <span class="spacer"></span>
     <span class="sub">박스 레벨 v1 (HTML) · 축소 표시 — 프레임의 [열기]로 실제 크기 확인</span>
-    <button class="icon-btn" id="themeBtn" title="테마 전환">◐</button>
   </header>
 
   <div class="wrap">
@@ -155,11 +155,5 @@
     </section>
   </div>
 
-  <script>
-    document.getElementById('themeBtn').addEventListener('click', () => {
-      const r = document.documentElement;
-      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
-    });
-  </script>
 </body>
 </html>

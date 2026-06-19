@@ -3,12 +3,90 @@
 // 테마 토글 + 캔버스 카드 더보기(⋮) 메뉴. 두 화면 공용.
 // ============================================================================
 (function () {
-  // 테마 토글 (있을 때만)
+  // ===== 색상 테마(팔레트) 선택 — #themeBtn → 하단 색상 피커 =====
+  // 팔레트 정의는 custom.css의 html[data-palette="..."] 토큰 오버라이드와 짝.
+  // dot=대표(강조)색, bg=배경 틴트 — 스와치는 좌/우로 두 색을 나눠 보여줌
+  var PALETTES = [
+    { key: 'indigo',     name: '인디고',   dot: '#4a4fd6', bg: '#f5f6fe' },
+    { key: 'violet',     name: '바이올렛', dot: '#7536c9', bg: '#f8f4fd' },
+    { key: 'teal',       name: '틸',       dot: '#0c857f', bg: '#f1f9f9' },
+    { key: 'emerald',    name: '에메랄드', dot: '#138046', bg: '#f2f9f5' },
+    { key: 'amber',      name: '앰버 틴트', dot: '#c87000', bg: '#fef8f0' },
+    { key: 'amber-warm', name: '앰버 웜',   dot: '#c87000', bg: '#f5f3ef' }
+  ];
+  var STORE_KEY = 'canvas-palette';
+  var root = document.documentElement;
+
+  function readPalette() {
+    var saved;
+    try { saved = localStorage.getItem(STORE_KEY); } catch (e) {}
+    var ok = PALETTES.some(function (p) { return p.key === saved; });
+    return ok ? saved : 'indigo';
+  }
+  function applyPalette(key) {
+    root.dataset.palette = key;
+    try { localStorage.setItem(STORE_KEY, key); } catch (e) {}
+    var bar = document.getElementById('themePicker');
+    if (bar) {
+      bar.querySelectorAll('.theme-swatch').forEach(function (s) {
+        s.classList.toggle('is-selected', s.dataset.palette === key);
+      });
+    }
+  }
+
+  // 저장값(또는 기본 인디고)을 즉시 적용
+  applyPalette(readPalette());
+
   var themeBtn = document.getElementById('themeBtn');
   if (themeBtn) {
-    themeBtn.addEventListener('click', function () {
-      var r = document.documentElement;
-      r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark';
+    // 색상 피커 바를 1회 생성
+    var picker = document.createElement('div');
+    picker.className = 'theme-picker';
+    picker.id = 'themePicker';
+    picker.setAttribute('role', 'group');
+    picker.setAttribute('aria-label', '색상 테마 선택');
+    var html = '<span class="tp-label">색상 테마</span>';
+    PALETTES.forEach(function (p) {
+      html += '<button class="theme-swatch" type="button" data-palette="' + p.key +
+              '" style="--sw:' + p.dot + ';--bg:' + p.bg + '" title="' + p.name + '" aria-label="' + p.name + '"></button>';
+    });
+    picker.innerHTML = html;
+    document.body.appendChild(picker);
+    applyPalette(readPalette()); // 갓 만든 스와치에 선택 표시
+
+    // 버튼 바로 아래에 위치시키기 (우측 정렬, 화면 밖으로 안 나가게 보정)
+    function positionPicker() {
+      var b = themeBtn.getBoundingClientRect();
+      picker.style.visibility = 'hidden';
+      picker.style.display = 'flex';
+      var w = picker.offsetWidth;
+      var left = b.right - w;                 // 버튼 오른쪽 끝에 맞춤
+      left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+      picker.style.left = left + 'px';
+      picker.style.top = (b.bottom + 8) + 'px';
+      picker.style.display = '';
+      picker.style.visibility = '';
+    }
+
+    themeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = !picker.classList.contains('is-open');
+      if (willOpen) positionPicker();
+      picker.classList.toggle('is-open');
+    });
+    window.addEventListener('resize', function () {
+      if (picker.classList.contains('is-open')) positionPicker();
+    });
+    picker.addEventListener('click', function (e) {
+      var sw = e.target.closest('.theme-swatch');
+      if (sw) applyPalette(sw.dataset.palette);
+    });
+    // 바깥 클릭 시 닫기
+    document.addEventListener('click', function (e) {
+      if (picker.classList.contains('is-open') &&
+          !picker.contains(e.target) && e.target !== themeBtn) {
+        picker.classList.remove('is-open');
+      }
     });
   }
 
@@ -52,9 +130,9 @@
           '<button class="tpl-close" data-tpl-close aria-label="닫기">✕</button>' +
         '</div>' +
         '<div class="tpl-grid">' +
-          '<div class="wf-card tpl is-selected"><div class="tpl-preview">빈 페이지</div><div class="tpl-body"><div class="tpl-name">빈 캔버스</div><div class="tpl-desc">아무것도 없는 자유 캔버스</div></div></div>' +
-          '<div class="wf-card tpl"><div class="tpl-preview">포스트잇 · 구역</div><div class="tpl-body"><div class="tpl-name">브레인스토밍</div><div class="tpl-desc">생각을 모으고 분류하는 틀</div></div></div>' +
-          '<div class="wf-card tpl"><div class="tpl-preview">중심 · 가지</div><div class="tpl-body"><div class="tpl-name">마인드맵</div><div class="tpl-desc">중심 주제에서 가지치기</div></div></div>' +
+          '<div class="wf-card tpl is-selected"><div class="tpl-preview mode-blank"></div><div class="tpl-body"><div class="tpl-name">빈 캔버스</div><div class="tpl-desc">아무것도 없는 자유 캔버스</div></div></div>' +
+          '<div class="wf-card tpl"><div class="tpl-preview mode-brainstorm"></div><div class="tpl-body"><div class="tpl-name">브레인스토밍</div><div class="tpl-desc">생각을 모으고 분류하는 틀</div></div></div>' +
+          '<div class="wf-card tpl"><div class="tpl-preview mode-mindmap"></div><div class="tpl-body"><div class="tpl-name">마인드맵</div><div class="tpl-desc">중심 주제에서 가지치기</div></div></div>' +
         '</div>' +
         '<div class="tpl-foot">' +
           '<span class="tpl-note">고르면 바로 편집 화면으로 들어가요</span>' +

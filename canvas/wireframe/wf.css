@@ -1,41 +1,9 @@
 /* ============================================================================
- * wf.css — Wireframe theme  (tds.css 기반, blue → grey 모노크롬 디브랜드)
- * ----------------------------------------------------------------------------
- * @toss/tds-colors · @toss/tds-typography · @toss/tds-easings 의 디자인 토큰을
- * 순수 CSS 변수 + 유틸/컴포넌트 규칙으로 추출·동결한 100% standalone 파일.
- * 대표색(blue)을 무채색(grey)으로 치환해 '와이어프레임' 느낌을 내는 변형판입니다.
- * (상태색 red/green/yellow 등과 그림자·라운드는 그대로 유지)
- *
- * ※ 외부 import·빌드·패키지 의존성 없음. 이 파일 하나만 복사하면 됩니다.
- *    네임스페이스는 --wf-* / .wf-* 입니다.
- *    라이트 색을 바꾸려면 [1] 고정 팔레트(--wf-*)만 수정 → [2] 어댑티브 라이트가
- *    이를 참조하므로 라이트 톤 전체에 자동 전파됩니다. 다크 톤은 [7]에서 조정.
- *    (모바일 폰트 스케일/접근성 룰은 웹 전용이라 제외)
- *
- * 사용법
- *   1) 이 파일을 <link> 로 연결하거나 import
- *   2) 라이트/다크 자동 대응. 강제 시 <html data-theme="dark|light">
- *   3) 어댑티브가 필요하면 --wf-a-* (라이트/다크 자동), 고정색이 필요하면 --wf-* 사용
- *   4) 커스터마이징 진입점: [1] 팔레트(라이트) + [7] 다크 오버라이드
- *
- * 목차
- *   [1] 컬러 토큰 — 고정 팔레트(colors, 항상 라이트 hex)
- *   [2] 어댑티브 토큰(adaptive) — 팔레트/배경/보더 (라이트 기본 + 다크 자동)
- *   [3] TDS 시맨틱 컴포넌트 토큰(--t*) — 그라데이션/배지/버튼/토스트 등
- *   [4] 앱 시맨틱 토큰(text/bg/border/state) — 어댑티브에 매핑(다크 자동)
- *   [5] 타이포그래피 토큰(스케일/굵기/패밀리/아이콘 높이)
- *   [6] 간격 / 라운드 / 그림자 / 이징(5종) / 모션
- *   [7] 다크 테마 오버라이드
- *   [8] 타이포그래피 유틸리티
- *   [9] 컬러 유틸리티
- *   [10] 컴포넌트 규칙
+ * wf.css — Wireframe theme (TDS 토큰 추출, blue→slate 디브랜드). standalone.
+ * 네임스페이스 --wf-* / .wf-*. 커스터마이징 진입점: [1] 팔레트. 라이트 전용.
  * ==========================================================================*/
 
-/* ============================================================================
- * [0] 폰트 로드 — Pretendard (variable). 로컬 파일 우선 → 없으면 CDN 폴백.
- *     이 woff2를 wf.css와 같은 폴더에 함께 두면(=함께 보내면) 오프라인에서도 동일.
- *     파일을 깜빡해도 인터넷만 되면 CDN이 받쳐주고, 둘 다 안되면 시스템 폰트로 폴백.
- * ==========================================================================*/
+/* [0] 폰트 — Pretendard (variable). 로컬 우선 → CDN → 시스템 폰트 폴백. */
 @font-face {
   font-family: 'Pretendard';
   font-weight: 45 920;     /* variable: 굵기 전 구간 한 파일로 */
@@ -46,25 +14,13 @@
 }
 
 /* ============================================================================
- * [1] 고정 팔레트 — TDS `colors` (라이트/다크 무관, 항상 동일).  ★ 커스터마이징 진입점
- *     라이트 톤의 단일 소스. [2] 어댑티브 라이트값이 여기를 참조하므로,
- *     이 값만 바꾸면 라이트 UI 전체 색이 따라옵니다.
+ * [1] 고정 팔레트 — 라이트 단일 소스. [2] 어댑티브가 참조하므로 여기만 바꾸면 전파.
  * ==========================================================================*/
 :root {
-  /* --- Wireframe accent: Cool Slate (역할 앵커 중립 램프, 테마 독립)  ★ 와이어프레임 진입점 ---
-     50=옅은 틴트 → 900=진함 / 500=accent / 600=primary(흰글자 OK). 이 10개만 바꾸면 accent 전체 전파. */
-  --wf-slate-50:  #f2f4f7;
-  --wf-slate-100: #e3e7ec;
-  --wf-slate-200: #cbd2db;
-  --wf-slate-300: #aab4c0;
-  --wf-slate-400: #8693a3;
-  --wf-slate-500: #677484;
-  --wf-slate-600: #4d5867;
-  --wf-slate-700: #3a434f;
-  --wf-slate-800: #2a313a;
-  --wf-slate-900: #1b2027;
+  /* accent 램프(slate, 테마 독립). 500=accent / 600=primary. 이 10개가 accent 전체로 전파 */
+  --wf-slate-50:  #eef0ff; --wf-slate-100: #dfe2ff; --wf-slate-200: #c2c7fb; --wf-slate-300: #a3aaf7; --wf-slate-400: #828bf0; --wf-slate-500: #6068e8; --wf-slate-600: #4a4fd6; --wf-slate-700: #3b3eb3; --wf-slate-800: #2f3190; --wf-slate-900: #232470;
 
-  /* --- Blue 슬롯 → 슬레이트 alias (accent 역할). blue 직접 참조도 슬레이트로 흐름 --- */
+  /* blue 슬롯 → slate alias (blue 직접 참조도 slate로 흐름) */
   --wf-blue-50:  var(--wf-slate-50);
   --wf-blue-100: var(--wf-slate-100);
   --wf-blue-200: var(--wf-slate-200);
@@ -178,9 +134,7 @@
 }
 
 /* ============================================================================
- * [2] 어댑티브 팔레트 — TDS `adaptive`.
- *     라이트값은 [1] 고정 팔레트를 참조(단일 소스). 다크 값은 [7]에서 오버라이드.
- *     ※ 와이어프레임: blue 슬롯은 [1]에서 슬레이트로 alias됨 → var(--wf-a-blue-500) = slate-500.
+ * [2] 어댑티브 팔레트 — 라이트값은 [1]을 참조.
  * ==========================================================================*/
 :root {
   /* blue */
@@ -298,15 +252,14 @@
   --wf-a-background-level-02: #ffffff;
   --wf-a-background-level-b-01: #f2f4f6;
   --wf-a-float-background: #ffffff;
-  --wf-a-grey-background: #f2f4f6;
+  --wf-a-grey-background: #f5f6fe;
   --wf-a-hairline-border: #e5e8eb;
   --wf-a-layered-background: #ffffff;
   --wf-a-pc-screen-bg: #f6f7f9;
 }
 
 /* ============================================================================
- * [3] TDS 시맨틱 컴포넌트 토큰 (--t*) — 패키지 lightTDSVariablesCSS 원본.
- *     그라데이션 · 헤어라인 · 토스트 · 버튼/배지 배경 등. 다크는 [7].
+ * [3] TDS 시맨틱 컴포넌트 토큰 (--t*) — 그라데이션/헤어라인/토스트/버튼/배지.
  * ==========================================================================*/
 :root {
   --tHairlineBackground: repeat-x url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect fill='rgba(0, 0, 33, 0.07)' x='0' y='0' width='1' height='0.5'/></svg>");
@@ -319,17 +272,17 @@
   --tRadioIndicatorBackgroundColor: #ffffff;
   --tToastBackground: rgba(25,31,40,0.54);
   --tDarkFillButtonBackground: #4e5968;
-  --tPrimaryWeakButtonBackground: var(--wf-slate-50); /* was #e8f3ff (blue-50) */
+  --tPrimaryWeakButtonBackground: var(--wf-slate-50);
   --tDangerWeakButtonBackground: #ffeeee;
   --tDarkWeakButtonBackground: #f2f4f6;
   --tLightWeakButtonBackground: rgba(222,222,255,0.19);
   --tButtonPressedAfterBackground: transparent;
-  --tPrimaryWeakButtonPressedBackground: var(--wf-slate-100); /* was rgba(49,130,246,0.26) */
+  --tPrimaryWeakButtonPressedBackground: var(--wf-slate-100);
   --tDangerWeakButtonPressedBackground: rgba(244,67,54,0.26);
   --tDarkWeakButtonPressedBackground: rgba(78,89,104,0.26);
   --tLightWeakButtonPressedBackground: rgba(255,255,255,0.26);
-  --tBlueBadgeColor: var(--wf-slate-500);             /* was #1b64da */
-  --tBlueBadgeBackground: var(--wf-grey-opacity-200); /* 중립 틴트 유지 */
+  --tBlueBadgeColor: var(--wf-slate-500);
+  --tBlueBadgeBackground: var(--wf-grey-opacity-200);
   --tTealBadgeColor: #0c8585;
   --tTealBadgeBackground: rgba(0,129,138,0.16);
   --tGreenBadgeColor: #029359;
@@ -346,12 +299,12 @@
 }
 
 /* ============================================================================
- * [4] 앱 시맨틱 토큰 — 어댑티브에 매핑되어 다크에서 자동 전환됩니다.
+ * [4] 앱 시맨틱 토큰 — 어댑티브 팔레트에 매핑.
  * ==========================================================================*/
 :root {
-  /* Brand (와이어프레임: 슬레이트 램프, 테마 독립이라 흰글자 항상 가독) */
-  --wf-primary:         var(--wf-a-blue-600); /* = slate-600 #4d5867 */
-  --wf-primary-hover:   var(--wf-a-blue-700); /* = slate-700 #3a434f */
+  /* Brand */
+  --wf-primary:         var(--wf-a-blue-600);
+  --wf-primary-hover:   var(--wf-a-blue-700);
   --wf-primary-weak-bg: var(--tPrimaryWeakButtonBackground);
 
   /* Text */
@@ -360,7 +313,7 @@
   --wf-text-sub:        var(--wf-a-grey-500);  /* 보조 */
   --wf-text-disabled:   var(--wf-a-grey-400);
   --wf-text-on-primary: var(--wf-white);
-  --wf-text-accent:     var(--wf-a-blue-600); /* = slate-600 (다크는 [7]에서 밝게) */
+  --wf-text-accent:     var(--wf-a-blue-600);
 
   /* Surface */
   --wf-bg-base:         var(--wf-a-grey-background);   /* 페이지 배경 */
@@ -384,8 +337,7 @@
 }
 
 /* ============================================================================
- * [5] 타이포그래피 토큰
- *     스케일: t(타이틀) / st(서브타이틀·본문). lineHeight ≈ fontSize × 1.5.
+ * [5] 타이포그래피 토큰 — t(타이틀)/st(서브타이틀·본문). line ≈ size × 1.5.
  * ==========================================================================*/
 :root {
   /* font-size / line-height 쌍 */
@@ -468,7 +420,7 @@
   --wf-shadow-3: 0 6px 20px rgba(0,23,51,0.08);
   --wf-shadow-float: 0 8px 24px rgba(0,23,51,0.12);
 
-  /* 이징 — @toss/tds-easings bezier 5종 (실제 값) */
+  /* 이징 — bezier 5종 */
   --wf-bezier-linear: cubic-bezier(0, 0, 1, 1);
   --wf-bezier-ease:   cubic-bezier(0.6, 0, 0, 0.6);
   --wf-bezier-out:    cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -482,274 +434,7 @@
 }
 
 /* ============================================================================
- * [7] 다크 테마 오버라이드 — 어댑티브 팔레트 + TDS 시맨틱 토큰만 재정의.
- *     [4] 앱 시맨틱은 어댑티브를 참조하므로 자동으로 따라옵니다.
- *     자동: OS 다크모드 / 수동: <html data-theme="dark">
- * ==========================================================================*/
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    /* accent(slate)는 테마 독립 → 다크에서 --wf-a-blue-* 미오버라이드 (slate 유지) */
-    --wf-a-grey-50: #202027;
-    --wf-a-grey-100: #2c2c35;
-    --wf-a-grey-200: #3c3c47;
-    --wf-a-grey-300: #4d4d59;
-    --wf-a-grey-400: #62626d;
-    --wf-a-grey-500: #7e7e87;
-    --wf-a-grey-600: #9e9ea4;
-    --wf-a-grey-700: #c3c3c6;
-    --wf-a-grey-800: #e4e4e5;
-    --wf-a-grey-900: #ffffff;
-    --wf-a-red-50: #3c2020;
-    --wf-a-red-100: #562025;
-    --wf-a-red-200: #7a242d;
-    --wf-a-red-300: #9e2733;
-    --wf-a-red-400: #ca2f3d;
-    --wf-a-red-500: #f04251;
-    --wf-a-red-600: #fa616d;
-    --wf-a-red-700: #fe818b;
-    --wf-a-red-800: #ffa8ad;
-    --wf-a-red-900: #ffd1d3;
-    --wf-a-green-50: #153729;
-    --wf-a-green-100: #135338;
-    --wf-a-green-200: #136d47;
-    --wf-a-green-300: #138a59;
-    --wf-a-green-400: #13a065;
-    --wf-a-green-500: #16bb76;
-    --wf-a-green-600: #26cf88;
-    --wf-a-green-700: #4ee4a6;
-    --wf-a-green-800: #82f6c5;
-    --wf-a-green-900: #ccffea;
-    --wf-a-teal-50: #203537;
-    --wf-a-teal-100: #224e51;
-    --wf-a-teal-200: #226368;
-    --wf-a-teal-300: #247e85;
-    --wf-a-teal-400: #26939a;
-    --wf-a-teal-500: #2eaab2;
-    --wf-a-teal-600: #43bec7;
-    --wf-a-teal-700: #65d4dc;
-    --wf-a-teal-800: #9be8ee;
-    --wf-a-teal-900: #d6fcff;
-    --wf-a-yellow-50: #3d2d1a;
-    --wf-a-yellow-100: #724c1e;
-    --wf-a-yellow-200: #b56f1d;
-    --wf-a-yellow-300: #eb8b1e;
-    --wf-a-yellow-400: #ffa126;
-    --wf-a-yellow-500: #ffb134;
-    --wf-a-yellow-600: #ffc259;
-    --wf-a-yellow-700: #ffd68a;
-    --wf-a-yellow-800: #ffe5b2;
-    --wf-a-yellow-900: #fff1d4;
-    --wf-a-orange-50: #3d2500;
-    --wf-a-orange-100: #563200;
-    --wf-a-orange-200: #804600;
-    --wf-a-orange-300: #a85f00;
-    --wf-a-orange-400: #cf7200;
-    --wf-a-orange-500: #f18600;
-    --wf-a-orange-600: #fd9528;
-    --wf-a-orange-700: #ffa861;
-    --wf-a-orange-800: #ffc39e;
-    --wf-a-orange-900: #ffe4d6;
-    --wf-a-purple-50: #3f2447;
-    --wf-a-purple-100: #522361;
-    --wf-a-purple-200: #66247b;
-    --wf-a-purple-300: #7b2595;
-    --wf-a-purple-400: #962fb5;
-    --wf-a-purple-500: #ae3dd1;
-    --wf-a-purple-600: #c353e5;
-    --wf-a-purple-700: #d77cf2;
-    --wf-a-purple-800: #eaacfc;
-    --wf-a-purple-900: #f6d9ff;
-    --wf-a-grey-opacity-50: rgba(209,209,253,0.05);
-    --wf-a-grey-opacity-100: rgba(217,217,255,0.11);
-    --wf-a-grey-opacity-200: rgba(222,222,255,0.19);
-    --wf-a-grey-opacity-300: rgba(224,224,255,0.27);
-    --wf-a-grey-opacity-400: rgba(232,232,253,0.36);
-    --wf-a-grey-opacity-500: rgba(242,242,255,0.47);
-    --wf-a-grey-opacity-600: rgba(248,248,255,0.6);
-    --wf-a-grey-opacity-700: rgba(253,253,255,0.75);
-    --wf-a-grey-opacity-800: rgba(253,253,254,0.89);
-    --wf-a-grey-opacity-900: #ffffff;
-    --wf-a-background: #17171c;
-    --wf-a-background-dimmed: rgba(0,0,0,0.56);
-    --wf-a-background-level-01: #202027;
-    --wf-a-background-level-02: #2c2c35;
-    --wf-a-background-level-b-01: #101013;
-    --wf-a-float-background: #2c2c35;
-    --wf-a-grey-background: #101013;
-    --wf-a-hairline-border: #3c3c47;
-    --wf-a-layered-background: #202027;
-    --wf-a-pc-screen-bg: #202027;
-
-    --tHairlineBackground: repeat-x url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect fill='rgba(222, 222, 255, 0.14)' x='0' y='0' width='1' height='0.5'/></svg>");
-    --tGradientToTop: linear-gradient(to top, #17171c, rgba(23,23,28,0));
-    --tGradientToBottom: linear-gradient(to bottom, #17171c, rgba(23,23,28,0));
-    --tGradientToRight: linear-gradient(to right, #17171c, rgba(23,23,28,0));
-    --tGradientToLeft: linear-gradient(to left, #17171c, rgba(23,23,28,0));
-    --tLayeredGradientToTop: linear-gradient(to top, #202027, rgba(32,32,39,0));
-    --tLayeredGradientToBottom: linear-gradient(to bottom, #202027, rgba(32,32,39,0));
-    --tRadioIndicatorBackgroundColor: #4d4d59;
-    --tToastBackground: rgba(217,217,255,0.11);
-    --tDarkFillButtonBackground: #4d4d59;
-    --tPrimaryWeakButtonBackground: rgba(217,217,255,0.11);
-    --tDangerWeakButtonBackground: rgba(217,217,255,0.11);
-    --tDarkWeakButtonBackground: rgba(217,217,255,0.11);
-    --tLightWeakButtonBackground: rgba(217,217,255,0.11);
-    --tButtonPressedAfterBackground: rgba(0, 0, 0, 0.26);
-    --tPrimaryWeakButtonPressedBackground: rgba(217,217,255,0.11);
-    --tDangerWeakButtonPressedBackground: rgba(217,217,255,0.11);
-    --tDarkWeakButtonPressedBackground: rgba(217,217,255,0.11);
-    --tLightWeakButtonPressedBackground: rgba(217,217,255,0.11);
-    --tBlueBadgeColor: var(--wf-slate-300);               /* 다크: 밝은 슬레이트 */
-    --tBlueBadgeBackground: var(--wf-a-grey-opacity-200); /* 중립 틴트 유지 */
-    --tTealBadgeColor: #30b6b6;
-    --tTealBadgeBackground: rgba(38,157,166,0.16);
-    --tGreenBadgeColor: #15c47e;
-    --tGreenBadgeBackground: rgba(21,196,126,0.16);
-    --tRedBadgeColor: #f66570;
-    --tRedBadgeBackground: rgba(239,83,80,0.16);
-    --tYellowBadgeColor: #faa131;
-    --tYellowBadgeBackground: rgba(255,209,88,0.16);
-    --tElephantBadgeColor: #c3c3c6;
-    --tElephantBadgeBackground: rgba(195,195,198,0.16);
-    --tSwiperBulletBackground: rgba(0,25,54,0.31);
-    --tListRowDisabledBackground: rgba(23,23,28,0.7);
-
-    /* 와이어프레임: 다크에서 accent 텍스트만 밝은 슬레이트로 (primary/hover는 slate 고정이라 OK) */
-    --wf-text-accent: var(--wf-slate-300);
-  }
-}
-[data-theme="dark"] {
-  /* accent(slate)는 테마 독립 → 다크에서 --wf-a-blue-* 미오버라이드 (slate 유지) */
-  --wf-a-grey-50: #202027;
-  --wf-a-grey-100: #2c2c35;
-  --wf-a-grey-200: #3c3c47;
-  --wf-a-grey-300: #4d4d59;
-  --wf-a-grey-400: #62626d;
-  --wf-a-grey-500: #7e7e87;
-  --wf-a-grey-600: #9e9ea4;
-  --wf-a-grey-700: #c3c3c6;
-  --wf-a-grey-800: #e4e4e5;
-  --wf-a-grey-900: #ffffff;
-  --wf-a-red-50: #3c2020;
-  --wf-a-red-100: #562025;
-  --wf-a-red-200: #7a242d;
-  --wf-a-red-300: #9e2733;
-  --wf-a-red-400: #ca2f3d;
-  --wf-a-red-500: #f04251;
-  --wf-a-red-600: #fa616d;
-  --wf-a-red-700: #fe818b;
-  --wf-a-red-800: #ffa8ad;
-  --wf-a-red-900: #ffd1d3;
-  --wf-a-green-50: #153729;
-  --wf-a-green-100: #135338;
-  --wf-a-green-200: #136d47;
-  --wf-a-green-300: #138a59;
-  --wf-a-green-400: #13a065;
-  --wf-a-green-500: #16bb76;
-  --wf-a-green-600: #26cf88;
-  --wf-a-green-700: #4ee4a6;
-  --wf-a-green-800: #82f6c5;
-  --wf-a-green-900: #ccffea;
-  --wf-a-teal-50: #203537;
-  --wf-a-teal-100: #224e51;
-  --wf-a-teal-200: #226368;
-  --wf-a-teal-300: #247e85;
-  --wf-a-teal-400: #26939a;
-  --wf-a-teal-500: #2eaab2;
-  --wf-a-teal-600: #43bec7;
-  --wf-a-teal-700: #65d4dc;
-  --wf-a-teal-800: #9be8ee;
-  --wf-a-teal-900: #d6fcff;
-  --wf-a-yellow-50: #3d2d1a;
-  --wf-a-yellow-100: #724c1e;
-  --wf-a-yellow-200: #b56f1d;
-  --wf-a-yellow-300: #eb8b1e;
-  --wf-a-yellow-400: #ffa126;
-  --wf-a-yellow-500: #ffb134;
-  --wf-a-yellow-600: #ffc259;
-  --wf-a-yellow-700: #ffd68a;
-  --wf-a-yellow-800: #ffe5b2;
-  --wf-a-yellow-900: #fff1d4;
-  --wf-a-orange-50: #3d2500;
-  --wf-a-orange-100: #563200;
-  --wf-a-orange-200: #804600;
-  --wf-a-orange-300: #a85f00;
-  --wf-a-orange-400: #cf7200;
-  --wf-a-orange-500: #f18600;
-  --wf-a-orange-600: #fd9528;
-  --wf-a-orange-700: #ffa861;
-  --wf-a-orange-800: #ffc39e;
-  --wf-a-orange-900: #ffe4d6;
-  --wf-a-purple-50: #3f2447;
-  --wf-a-purple-100: #522361;
-  --wf-a-purple-200: #66247b;
-  --wf-a-purple-300: #7b2595;
-  --wf-a-purple-400: #962fb5;
-  --wf-a-purple-500: #ae3dd1;
-  --wf-a-purple-600: #c353e5;
-  --wf-a-purple-700: #d77cf2;
-  --wf-a-purple-800: #eaacfc;
-  --wf-a-purple-900: #f6d9ff;
-  --wf-a-grey-opacity-50: rgba(209,209,253,0.05);
-  --wf-a-grey-opacity-100: rgba(217,217,255,0.11);
-  --wf-a-grey-opacity-200: rgba(222,222,255,0.19);
-  --wf-a-grey-opacity-300: rgba(224,224,255,0.27);
-  --wf-a-grey-opacity-400: rgba(232,232,253,0.36);
-  --wf-a-grey-opacity-500: rgba(242,242,255,0.47);
-  --wf-a-grey-opacity-600: rgba(248,248,255,0.6);
-  --wf-a-grey-opacity-700: rgba(253,253,255,0.75);
-  --wf-a-grey-opacity-800: rgba(253,253,254,0.89);
-  --wf-a-grey-opacity-900: #ffffff;
-  --wf-a-background: #17171c;
-  --wf-a-background-dimmed: rgba(0,0,0,0.56);
-  --wf-a-background-level-01: #202027;
-  --wf-a-background-level-02: #2c2c35;
-  --wf-a-background-level-b-01: #101013;
-  --wf-a-float-background: #2c2c35;
-  --wf-a-grey-background: #101013;
-  --wf-a-hairline-border: #3c3c47;
-  --wf-a-layered-background: #202027;
-  --wf-a-pc-screen-bg: #202027;
-  --tHairlineBackground: repeat-x url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect fill='rgba(222, 222, 255, 0.14)' x='0' y='0' width='1' height='0.5'/></svg>");
-  --tGradientToTop: linear-gradient(to top, #17171c, rgba(23,23,28,0));
-  --tGradientToBottom: linear-gradient(to bottom, #17171c, rgba(23,23,28,0));
-  --tGradientToRight: linear-gradient(to right, #17171c, rgba(23,23,28,0));
-  --tGradientToLeft: linear-gradient(to left, #17171c, rgba(23,23,28,0));
-  --tLayeredGradientToTop: linear-gradient(to top, #202027, rgba(32,32,39,0));
-  --tLayeredGradientToBottom: linear-gradient(to bottom, #202027, rgba(32,32,39,0));
-  --tRadioIndicatorBackgroundColor: #4d4d59;
-  --tToastBackground: rgba(217,217,255,0.11);
-  --tDarkFillButtonBackground: #4d4d59;
-  --tPrimaryWeakButtonBackground: rgba(217,217,255,0.11);
-  --tDangerWeakButtonBackground: rgba(217,217,255,0.11);
-  --tDarkWeakButtonBackground: rgba(217,217,255,0.11);
-  --tLightWeakButtonBackground: rgba(217,217,255,0.11);
-  --tButtonPressedAfterBackground: rgba(0, 0, 0, 0.26);
-  --tPrimaryWeakButtonPressedBackground: rgba(217,217,255,0.11);
-  --tDangerWeakButtonPressedBackground: rgba(217,217,255,0.11);
-  --tDarkWeakButtonPressedBackground: rgba(217,217,255,0.11);
-  --tLightWeakButtonPressedBackground: rgba(217,217,255,0.11);
-  --tBlueBadgeColor: var(--wf-slate-300);               /* 다크: 밝은 슬레이트 */
-  --tBlueBadgeBackground: var(--wf-a-grey-opacity-200); /* 중립 틴트 유지 */
-  --tTealBadgeColor: #30b6b6;
-  --tTealBadgeBackground: rgba(38,157,166,0.16);
-  --tGreenBadgeColor: #15c47e;
-  --tGreenBadgeBackground: rgba(21,196,126,0.16);
-  --tRedBadgeColor: #f66570;
-  --tRedBadgeBackground: rgba(239,83,80,0.16);
-  --tYellowBadgeColor: #faa131;
-  --tYellowBadgeBackground: rgba(255,209,88,0.16);
-  --tElephantBadgeColor: #c3c3c6;
-  --tElephantBadgeBackground: rgba(195,195,198,0.16);
-  --tSwiperBulletBackground: rgba(0,25,54,0.31);
-  --tListRowDisabledBackground: rgba(23,23,28,0.7);
-
-  /* 와이어프레임: 다크에서 accent 텍스트만 밝은 슬레이트로 (primary/hover는 slate 고정이라 OK) */
-  --wf-text-accent: var(--wf-slate-300);
-}
-
-/* ============================================================================
- * [8] 타이포그래피 유틸리티
+ * [7] 타이포그래피 유틸리티
  * ==========================================================================*/
 [class^="wf-t"], [class*=" wf-t"], [class^="wf-st"], [class*=" wf-st"] {
   font-family: var(--wf-font-family);
@@ -782,7 +467,7 @@
 .wf-extrabold{ font-weight: var(--wf-weight-extrabold); }
 
 /* ============================================================================
- * [9] 컬러 유틸리티 (텍스트 / 배경)
+ * [8] 컬러 유틸리티 (텍스트 / 배경)
  * ==========================================================================*/
 .wf-text-strong  { color: var(--wf-text-strong); }
 .wf-text-default { color: var(--wf-text-default); }
@@ -803,7 +488,7 @@
 .wf-fade-right  { background: var(--tGradientToRight); }
 
 /* ============================================================================
- * [10] 컴포넌트 규칙
+ * [9] 컴포넌트 규칙
  * ==========================================================================*/
 
 /* --- Button: .wf-btn + color(.is-danger/.is-dark/.is-light) + variant(.is-weak) + size --- */
